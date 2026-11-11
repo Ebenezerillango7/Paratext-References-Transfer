@@ -1,0 +1,14 @@
+IRV Tamil — GNTD importer verification results
+
+GNTD rows parsed: 272; parse errors: 0
+SFM files matched by \id: 39 / 39
+Locations processed: 272
+New \r lines proposed: 261
+Exact pre-existing references skipped: 11
+New \p markers proposed: 156
+Unresolved locations / processing errors: 0
+Proposed \r and \p actions: 417
+
+Regression suite: 9 tests passed. The suite checks source name conversion, chapter-start and direct-verse anchors, wrong and exact existing references, missing \p insertion, ID mismatch rejection, all 39 files, repeat-run idempotence, and full apply/backup behavior on temporary copies.
+
+A separate Imported SFM folder contains all 39 processed copies. The original Pre-Requisites/SFM Samples were not changed. Every new \r line has a \s Insert Heading directly above it. A full second pass produced 0 further edits and recognized all 272 rows as exact.
