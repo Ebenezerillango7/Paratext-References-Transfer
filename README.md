@@ -1,4 +1,4 @@
-﻿# IRV Tamil GNTD Parallel Reference Importer
+# IRV Tamil GNTD Parallel Reference Importer
 
 A standalone Python/Tkinter application that imports the supplied GNTD parallel passage references into IRV Tamil SFM/USFM files for GEN–MAL. It uses only the Python standard library.
 
@@ -18,9 +18,10 @@ A standalone Python/Tkinter application that imports the supplied GNTD parallel 
 
 ## Import behavior
 
-- Reads GNTD rows such as `GEN 11:9: \\r (1 Chronicles 1.24-27)` and anchors them to the matching chapter and verse. A GNTD chapter location ending in `:0` means the first verse of that chapter. A verse range location uses its first verse as the insertion point.
-- Adds a `\\s Insert Heading` line immediately before each newly inserted `\\r` line.
+- Reads GNTD rows such as `GEN 11:9: \\r (1 Chronicles 1.24-27)` and anchors each insertion point to the following verse (`location + 1`, e.g. `GEN 11:9` inserts at verse 10; chapter start `:0` inserts at verse 1).
+- Inserts a `\\s Insert Heading` line only if an `\\s` heading is not already available for that section.
 - Ensures a `\\p` marker directly precedes the target verse. Adds it when missing.
+- Removes all opening and closing brackets from `\\r` references and removes any trailing full stop or punctuation.
 - Converts English source book names to the exact `abbr` attribute from `IRVTamBooknames.xml`; chapter/verse separators are written with colons.
 - Leaves an exact existing reference alone. If the existing reference differs, preserves it and adds the GNTD reference below it.
 - Does not modify unselected books. Preview never writes to source files. Applying changes makes timestamped backups by default.

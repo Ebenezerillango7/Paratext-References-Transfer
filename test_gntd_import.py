@@ -40,25 +40,33 @@ class GntdImporterTests(unittest.TestCase):
         )
 
     def test_chapter_start_and_missing_paragraph(self):
-        source = "\\id GEN\n\\c 10\n\\s Existing title\n\\v 1 First verse\n"
-        transformed, changes, skipped, errors = APP.import_gntd_references(source, "GEN", rows_at(10, 1), BOOK_DATA)
+        # Case 1: When \s heading is already present, do not insert \s Insert Heading
+        source_with_s = "\\id GEN\n\\c 10\n\\s Existing title\n\\v 1 First verse\n"
+        transformed, changes, skipped, errors = APP.import_gntd_references(source_with_s, "GEN", rows_at(10, 1), BOOK_DATA)
         self.assertFalse(errors)
         self.assertEqual(0, skipped)
-        self.assertIn("\\s Insert Heading\n\\r (1நாளா 1:5-23)\n\\p\n\\v 1 First verse", transformed)
+        self.assertIn("\\s Existing title\n\\r 1நாளா 1:5-23\n\\p\n\\v 1 First verse", transformed)
+        self.assertNotIn("\\s Insert Heading", transformed)
         self.assertEqual("GEN 10:0", next(item for item in changes if item.get("kind") == "reference")["gntd_location"])
         self.assertEqual(1, sum(item.get("kind") == "paragraph" for item in changes))
 
+        # Case 2: When \s heading is NOT present, insert \s Insert Heading
+        source_without_s = "\\id GEN\n\\c 10\n\\v 1 First verse\n"
+        transformed2, changes2, skipped2, errors2 = APP.import_gntd_references(source_without_s, "GEN", rows_at(10, 1), BOOK_DATA)
+        self.assertFalse(errors2)
+        self.assertIn("\\s Insert Heading\n\\r 1நாளா 1:5-23\n\\p\n\\v 1 First verse", transformed2)
+
     def test_direct_verse_and_wrong_existing_reference_is_preserved(self):
-        source = "\\id GEN\n\\c 11\n\\s Existing title\n\\r (ஆதி 11:1)\n\\v 9 Target verse\n"
-        transformed, changes, skipped, errors = APP.import_gntd_references(source, "GEN", rows_at(11, 9), BOOK_DATA)
+        source = "\\id GEN\n\\c 11\n\\s Existing title\n\\r ஆதி 11:1\n\\v 10 Target verse\n"
+        transformed, changes, skipped, errors = APP.import_gntd_references(source, "GEN", rows_at(11, 10), BOOK_DATA)
         self.assertFalse(errors)
         self.assertEqual(0, skipped)
-        self.assertIn("\\r (ஆதி 11:1)\n\\s Insert Heading\n\\r (1நாளா 1:24-27)\n\\p\n\\v 9 Target verse", transformed)
+        self.assertIn("\\s Existing title\n\\r ஆதி 11:1\n\\r 1நாளா 1:24-27\n\\p\n\\v 10 Target verse", transformed)
         self.assertEqual(1, sum(item.get("kind") == "reference" for item in changes))
 
     def test_exact_reference_is_not_duplicated(self):
-        source = "\\id GEN\n\\c 11\n\\s Existing title\n\\r (1நாளா 1:24-27)\n\\p\n\\v 9 Target verse\n"
-        transformed, changes, skipped, errors = APP.import_gntd_references(source, "GEN", rows_at(11, 9), BOOK_DATA)
+        source = "\\id GEN\n\\c 11\n\\s Existing title\n\\r 1நாளா 1:24-27\n\\p\n\\v 10 Target verse\n"
+        transformed, changes, skipped, errors = APP.import_gntd_references(source, "GEN", rows_at(11, 10), BOOK_DATA)
         self.assertEqual(source, transformed)
         self.assertEqual([], changes)
         self.assertEqual(1, skipped)
@@ -121,7 +129,7 @@ class GntdImporterTests(unittest.TestCase):
                 self.assertEqual(after, again, source.name)
                 self.assertEqual([], repeated_changes, source.name)
                 self.assertEqual([], repeated_errors, source.name)
-        self.assertEqual(261, reference_count)
+        self.assertEqual(246, reference_count)
         self.assertEqual(20, backup_count)
 
     def test_all_39_samples_preview_without_errors_and_are_idempotent(self):
@@ -140,8 +148,10 @@ class GntdImporterTests(unittest.TestCase):
             reference_insertions += sum(item.get("kind") == "reference" for item in changes)
             output_lines = transformed.splitlines()
             for index, line in enumerate(output_lines):
-                if line.startswith("\\r (") and index and output_lines[index - 1] == "\\s Insert Heading":
+                if line.startswith("\\r "):
                     self.assertNotRegex(line, r"Genesis|Exodus|Leviticus|Numbers|Deuteronomy")
+                    self.assertNotRegex(line, r"[()[\]]")
+                    self.assertFalse(line.endswith("."))
             again, changes_again, _skipped_again, errors_again = APP.import_gntd_references(
                 transformed, code, ROWS, BOOK_DATA
             )
@@ -149,8 +159,8 @@ class GntdImporterTests(unittest.TestCase):
             self.assertEqual([], errors_again, path.name)
             second_pass_changes += len(changes_again)
         self.assertEqual(set(APP.BOOK_ORDER), codes)
-        self.assertEqual(261, reference_insertions)
-        self.assertEqual(11, exact_matches)
+        self.assertEqual(246, reference_insertions)
+        self.assertEqual(26, exact_matches)
         self.assertEqual(0, second_pass_changes)
 
 

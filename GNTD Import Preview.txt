@@ -5,1050 +5,1114 @@ GNTD rows parsed: 272
 SFM files identified by \id: 39 / 39
 GNTD parse errors: 0
 
-Proposed new \r lines: 261
-Proposed new \p markers: 156
-Exact references skipped: 11
+Proposed new \r lines: 246
+Proposed new \s Insert Heading lines: 76
+Proposed new \p markers: 59
+Exact references skipped: 26
 Unresolved locations / processing errors: 0
 
 Per-book summary:
-BOOK | GNTD rows | new refs | added \p | exact matches | errors
-GEN | 9 | 8 | 5 | 1 | 0
-EXO | 41 | 31 | 24 | 10 | 0
-LEV | 11 | 11 | 6 | 0 | 0
-NUM | 14 | 14 | 9 | 0 | 0
-DEU | 20 | 20 | 12 | 0 | 0
-JOS | 1 | 1 | 1 | 0 | 0
-JDG | 1 | 1 | 1 | 0 | 0
-RUT | 0 | 0 | 0 | 0 | 0
-1SA | 1 | 1 | 0 | 0 | 0
-2SA | 12 | 12 | 5 | 0 | 0
-1KI | 25 | 25 | 17 | 0 | 0
-2KI | 34 | 34 | 22 | 0 | 0
-1CH | 21 | 21 | 9 | 0 | 0
-2CH | 56 | 56 | 28 | 0 | 0
-EZR | 1 | 1 | 0 | 0 | 0
-NEH | 1 | 1 | 1 | 0 | 0
-EST | 0 | 0 | 0 | 0 | 0
-JOB | 0 | 0 | 0 | 0 | 0
-PSA | 8 | 8 | 8 | 0 | 0
-PRO | 0 | 0 | 0 | 0 | 0
-ECC | 0 | 0 | 0 | 0 | 0
-SNG | 0 | 0 | 0 | 0 | 0
-ISA | 7 | 7 | 2 | 0 | 0
-JER | 5 | 5 | 4 | 0 | 0
-LAM | 0 | 0 | 0 | 0 | 0
-EZK | 3 | 3 | 2 | 0 | 0
-DAN | 0 | 0 | 0 | 0 | 0
-HOS | 0 | 0 | 0 | 0 | 0
-JOL | 0 | 0 | 0 | 0 | 0
-AMO | 0 | 0 | 0 | 0 | 0
-OBA | 0 | 0 | 0 | 0 | 0
-JON | 0 | 0 | 0 | 0 | 0
-MIC | 1 | 1 | 0 | 0 | 0
-NAM | 0 | 0 | 0 | 0 | 0
-HAB | 0 | 0 | 0 | 0 | 0
-ZEP | 0 | 0 | 0 | 0 | 0
-HAG | 0 | 0 | 0 | 0 | 0
-ZEC | 0 | 0 | 0 | 0 | 0
-MAL | 0 | 0 | 0 | 0 | 0
+BOOK | GNTD rows | new refs | added \s | added \p | exact matches | errors
+GEN | 9 | 8 | 2 | 1 | 1 | 0
+EXO | 41 | 16 | 3 | 1 | 25 | 0
+LEV | 11 | 11 | 6 | 6 | 0 | 0
+NUM | 14 | 14 | 3 | 2 | 0 | 0
+DEU | 20 | 20 | 5 | 5 | 0 | 0
+JOS | 1 | 1 | 1 | 1 | 0 | 0
+JDG | 1 | 1 | 0 | 0 | 0 | 0
+RUT | 0 | 0 | 0 | 0 | 0 | 0
+1SA | 1 | 1 | 0 | 0 | 0 | 0
+2SA | 12 | 12 | 2 | 1 | 0 | 0
+1KI | 25 | 25 | 7 | 4 | 0 | 0
+2KI | 34 | 34 | 12 | 12 | 0 | 0
+1CH | 21 | 21 | 2 | 2 | 0 | 0
+2CH | 56 | 56 | 19 | 10 | 0 | 0
+EZR | 1 | 1 | 0 | 0 | 0 | 0
+NEH | 1 | 1 | 0 | 0 | 0 | 0
+EST | 0 | 0 | 0 | 0 | 0 | 0
+JOB | 0 | 0 | 0 | 0 | 0 | 0
+PSA | 8 | 8 | 8 | 8 | 0 | 0
+PRO | 0 | 0 | 0 | 0 | 0 | 0
+ECC | 0 | 0 | 0 | 0 | 0 | 0
+SNG | 0 | 0 | 0 | 0 | 0 | 0
+ISA | 7 | 7 | 1 | 1 | 0 | 0
+JER | 5 | 5 | 3 | 3 | 0 | 0
+LAM | 0 | 0 | 0 | 0 | 0 | 0
+EZK | 3 | 3 | 2 | 2 | 0 | 0
+DAN | 0 | 0 | 0 | 0 | 0 | 0
+HOS | 0 | 0 | 0 | 0 | 0 | 0
+JOL | 0 | 0 | 0 | 0 | 0 | 0
+AMO | 0 | 0 | 0 | 0 | 0 | 0
+OBA | 0 | 0 | 0 | 0 | 0 | 0
+JON | 0 | 0 | 0 | 0 | 0 | 0
+MIC | 1 | 1 | 0 | 0 | 0 | 0
+NAM | 0 | 0 | 0 | 0 | 0 | 0
+HAB | 0 | 0 | 0 | 0 | 0 | 0
+ZEP | 0 | 0 | 0 | 0 | 0 | 0
+HAG | 0 | 0 | 0 | 0 | 0 | 0
+ZEC | 0 | 0 | 0 | 0 | 0 | 0
+MAL | 0 | 0 | 0 | 0 | 0 | 0
 
-Exact references already present (not duplicated):
-- GEN 5:0
-- EXO 20:0
-- EXO 21:0
-- EXO 26:0
-- EXO 27:0
-- EXO 29:0
-- EXO 30:0
-- EXO 31:0
-- EXO 32:0
-- EXO 37:0
-- EXO 38:0
+01GENIRVTam.SFM: 9 change(s)
+GNTD line 2 at GEN 10:0; target GEN 10:1
+Existing (kept): \r 1நாளா 1:5
+\r 1நாளா 1:5-23
 
-PROPOSED CHANGES BY BOOK
+GNTD line 3 at GEN 11:9; target GEN 11:10
+\r 1நாளா 1:24-27
 
-[GEN — 01GENIRVTam.SFM]
-GNTD line 2 — GEN 10:0 -> target GEN 10:1
-  \s Insert Heading
-  Existing (kept): \r 1நாளா 1:5
-  \r (1நாளா 1:5-23)
-GNTD line 3 — GEN 11:9 -> target GEN 11:9
-  \s Insert Heading
-  \r (1நாளா 1:24-27)
-  \p (added immediately before target verse)
-GNTD line 4 — GEN 25:0 -> target GEN 25:1
-  \s Insert Heading
-  Existing (kept): \r 1நாளா 1:32-33
-  \r (1நாளா 1:32,33)
-GNTD line 5 — GEN 25:11 -> target GEN 25:11
-  \s Insert Heading
-  \r (1நாளா 1:28-31)
-  \p (added immediately before target verse)
-GNTD line 6 — GEN 35:21 -> target GEN 35:21
-  \s Insert Heading
-  \r (1நாளா 2:1,2)
-  \p (added immediately before target verse)
-GNTD line 7 — GEN 36:0 -> target GEN 36:1
-  \s Insert Heading
-  Existing (kept): \r 1நாளா 1:35-37
-  \r (1நாளா 1:34-37)
-GNTD line 8 — GEN 36:19 -> target GEN 36:19
-  \s Insert Heading
-  \r (1நாளா 1:38-42)
-  \p (added immediately before target verse)
-GNTD line 9 — GEN 36:29-30 -> target GEN 36:29
-  \s Insert Heading
-  \r (1நாளா 1:43-54)
-  \p (added immediately before target verse)
+GNTD line 4 at GEN 25:0; target GEN 25:1
+Existing (kept): \r 1நாளா 1:32-33
+\r 1நாளா 1:32,33
 
-[EXO — 02EXOIRVTam.SFM]
-GNTD line 10 — EXO 17:0 -> target EXO 17:1
-  \s Insert Heading
-  \r (எண் 20:1-13)
-GNTD line 11 — EXO 18:12 -> target EXO 18:12
-  \s Insert Heading
-  \r (உபா 1:9-18)
-  \p (added immediately before target verse)
-GNTD line 13 — EXO 20:17 -> target EXO 20:17
-  \s Insert Heading
-  \r (உபா 5:22-33)
-GNTD line 15 — EXO 23:13 -> target EXO 23:13
-  \s Insert Heading
-  \r (யாத் 34:18-26; உபா 16:1-17)
-  \p (added immediately before target verse)
-GNTD line 16 — EXO 25:0 -> target EXO 25:1
-  \s Insert Heading
-  Existing (kept): \r யாத் 39:4-9
-  \r (யாத் 35:4-9)
-GNTD line 17 — EXO 25:9 -> target EXO 25:9
-  \s Insert Heading
-  \r (யாத் 37:1-9)
-  \p (added immediately before target verse)
-GNTD line 18 — EXO 25:22 -> target EXO 25:22
-  \s Insert Heading
-  \r (யாத் 37:10-16)
-  \p (added immediately before target verse)
-GNTD line 19 — EXO 25:30 -> target EXO 25:30
-  \s Insert Heading
-  \r (யாத் 37:17-24)
-  \p (added immediately before target verse)
-GNTD line 22 — EXO 27:8 -> target EXO 27:8
-  \s Insert Heading
-  \r (யாத் 38:9-20)
-  \p (added immediately before target verse)
-GNTD line 23 — EXO 27:19 -> target EXO 27:19
-  \s Insert Heading
-  \r (லேவி 24:1-4)
-  \p (added immediately before target verse)
-GNTD line 24 — EXO 28:0 -> target EXO 28:1
-  \s Insert Heading
-  Existing (kept): \r யாத் 39:1
-  \r (யாத் 39:1-7)
-GNTD line 25 — EXO 28:14 -> target EXO 28:14
-  \s Insert Heading
-  \r (யாத் 39:8-21)
-  \p (added immediately before target verse)
-GNTD line 26 — EXO 28:30 -> target EXO 28:30
-  \s Insert Heading
-  \r (யாத் 39:22-31)
-  \p (added immediately before target verse)
-GNTD line 28 — EXO 29:37 -> target EXO 29:37
-  \s Insert Heading
-  \r (எண் 28:1-8)
-  \p (added immediately before target verse)
-GNTD line 32 — EXO 34:0 -> target EXO 34:1
-  \s Insert Heading
-  Existing (kept): \r உபா 1:1-5
-  \r (உபா 10:1-5)
-GNTD line 33 — EXO 34:9 -> target EXO 34:9
-  \s Insert Heading
-  \r (யாத் 23:14-19; உபா 7:1-5; உபா 16:1-17)
-  \p (added immediately before target verse)
-GNTD line 34 — EXO 35:3 -> target EXO 35:3
-  \s Insert Heading
-  \r (யாத் 25:1-9)
-  \p (added immediately before target verse)
-GNTD line 35 — EXO 35:9 -> target EXO 35:9
-  \s Insert Heading
-  \r (யாத் 39:32-43)
-  \p (added immediately before target verse)
-GNTD line 36 — EXO 35:29 -> target EXO 35:29
-  \s Insert Heading
-  \r (யாத் 31:1-11)
-  \p (added immediately before target verse)
-GNTD line 37 — EXO 36:7 -> target EXO 36:7
-  \s Insert Heading
-  \r (யாத் 26:1-37)
-  \p (added immediately before target verse)
-GNTD line 39 — EXO 37:9 -> target EXO 37:9
-  \s Insert Heading
-  \r (யாத் 25:23-30)
-  \p (added immediately before target verse)
-GNTD line 40 — EXO 37:16 -> target EXO 37:16
-  \s Insert Heading
-  \r (யாத் 25:31-40)
-  \p (added immediately before target verse)
-GNTD line 41 — EXO 37:24 -> target EXO 37:24
-  \s Insert Heading
-  \r (யாத் 30:1-5)
-  \p (added immediately before target verse)
-GNTD line 42 — EXO 37:28 -> target EXO 37:28
-  \s Insert Heading
-  \r (யாத் 30:22-38)
-  \p (added immediately before target verse)
-GNTD line 44 — EXO 38:7 -> target EXO 38:7
-  \s Insert Heading
-  \r (யாத் 30:18)
-  \p (added immediately before target verse)
-GNTD line 45 — EXO 38:8 -> target EXO 38:8
-  \s Insert Heading
-  \r (யாத் 27:9-19)
-GNTD line 46 — EXO 39:0 -> target EXO 39:1
-  \s Insert Heading
-  Existing (kept): \r யாத் 28:1-4
-  \r (யாத் 28:1-14)
-GNTD line 47 — EXO 39:7 -> target EXO 39:7
-  \s Insert Heading
-  \r (யாத் 28:15-30)
-  \p (added immediately before target verse)
-GNTD line 48 — EXO 39:21 -> target EXO 39:21
-  \s Insert Heading
-  \r (யாத் 28:31-43)
-  \p (added immediately before target verse)
-GNTD line 49 — EXO 39:31 -> target EXO 39:31
-  \s Insert Heading
-  \r (யாத் 35:10-19)
-  \p (added immediately before target verse)
-GNTD line 50 — EXO 40:33 -> target EXO 40:33
-  \s Insert Heading
-  \r (எண் 9:15-23)
-  \p (added immediately before target verse)
+GNTD line 5 at GEN 25:11; target GEN 25:12
+\r 1நாளா 1:28-31
 
-[LEV — 03LEVIRVTam.SFM]
-GNTD line 51 — LEV 8:0 -> target LEV 8:1
-  \s Insert Heading
-  \r (யாத் 29:1-37)
-GNTD line 52 — LEV 11:0 -> target LEV 11:1
-  \s Insert Heading
-  \r (உபா 14:3-21)
-GNTD line 53 — LEV 23:4 -> target LEV 23:4
-  \s Insert Heading
-  \r (எண் 28:16-25)
-  \p (added immediately before target verse)
-GNTD line 54 — LEV 23:14 -> target LEV 23:14
-  \s Insert Heading
-  \r (எண் 28:26-31)
-  \p (added immediately before target verse)
-GNTD line 55 — LEV 23:22 -> target LEV 23:22
-  \s Insert Heading
-  \r (எண் 29:1-6)
-  \p (added immediately before target verse)
-GNTD line 56 — LEV 23:25 -> target LEV 23:25
-  \s Insert Heading
-  \r (எண் 29:7-11)
-  \p (added immediately before target verse)
-GNTD line 57 — LEV 23:32 -> target LEV 23:32
-  \s Insert Heading
-  \r (எண் 29:12-40)
-  \p (added immediately before target verse)
-GNTD line 58 — LEV 24:0 -> target LEV 24:1
-  \s Insert Heading
-  \r (யாத் 27:20,21)
-GNTD line 59 — LEV 25:0 -> target LEV 25:1
-  \s Insert Heading
-  \r (உபா 15:1-11)
-GNTD line 60 — LEV 26:0 -> target LEV 26:1
-  \s Insert Heading
-  \r (உபா 7:12-24; உபா 28:1-14)
-GNTD line 61 — LEV 26:13 -> target LEV 26:13
-  \s Insert Heading
-  \r (உபா 28:15-68)
-  \p (added immediately before target verse)
+GNTD line 6 at GEN 35:21; target GEN 35:22
+Added \p immediately before target verse
 
-[NUM — 04NUMIRVTam.SFM]
-GNTD line 62 — NUM 9:14 -> target NUM 9:14
-  \s Insert Heading
-  \r (யாத் 40:34-38)
-  \p (added immediately before target verse)
-GNTD line 63 — NUM 13:0 -> target NUM 13:1
-  \s Insert Heading
-  \r (உபா 1:19-33)
-GNTD line 64 — NUM 14:38 -> target NUM 14:38
-  \s Insert Heading
-  \r (உபா 1:41-46)
-  \p (added immediately before target verse)
-GNTD line 65 — NUM 20:0 -> target NUM 20:1
-  \s Insert Heading
-  \r (யாத் 17:1-7)
-GNTD line 66 — NUM 21:20 -> target NUM 21:20
-  \s Insert Heading
-  \r (உபா 2:26—3:11)
-  \p (added immediately before target verse)
-GNTD line 67 — NUM 27:11 -> target NUM 27:11
-  \s Insert Heading
-  \r (உபா 31:1-8)
-  \p (added immediately before target verse)
-GNTD line 68 — NUM 28:0 -> target NUM 28:1
-  \s Insert Heading
-  \r (யாத் 29:38-46)
-GNTD line 69 — NUM 28:15 -> target NUM 28:15
-  \s Insert Heading
-  \r (லேவி 23:5-14)
-  \p (added immediately before target verse)
-GNTD line 70 — NUM 28:25 -> target NUM 28:25
-  \s Insert Heading
-  \r (லேவி 23:15-22)
-  \p (added immediately before target verse)
-GNTD line 71 — NUM 29:0 -> target NUM 29:1
-  \s Insert Heading
-  \r (லேவி 23:23-25)
-GNTD line 72 — NUM 29:6 -> target NUM 29:6
-  \s Insert Heading
-  \r (லேவி 23:26-32)
-  \p (added immediately before target verse)
-GNTD line 73 — NUM 29:11 -> target NUM 29:11
-  \s Insert Heading
-  \r (லேவி 23:33-44)
-  \p (added immediately before target verse)
-GNTD line 74 — NUM 32:0 -> target NUM 32:1
-  \s Insert Heading
-  \r (உபா 3:12-22)
-GNTD line 75 — NUM 35:8 -> target NUM 35:8
-  \s Insert Heading
-  \r (உபா 19:1-13; யோசு 20:1-9)
-  \p (added immediately before target verse)
+GNTD line 6 at GEN 35:21; target GEN 35:22
+\s Insert Heading
+\r 1நாளா 2:1,2
 
-[DEU — 05DEUIRVTam.SFM]
-GNTD line 76 — DEU 1:8 -> target DEU 1:8
-  \s Insert Heading
-  \r (யாத் 18:13-27)
-  \p (added immediately before target verse)
-GNTD line 77 — DEU 1:18 -> target DEU 1:18
-  \s Insert Heading
-  \r (எண் 13:1-33)
-  \p (added immediately before target verse)
-GNTD line 78 — DEU 1:33 -> target DEU 1:33
-  \s Insert Heading
-  \r (எண் 14:20-45)
-  \p (added immediately before target verse)
-GNTD line 79 — DEU 2:25 -> target DEU 2:25
-  \s Insert Heading
-  \r (எண் 21:21-30)
-  \p (added immediately before target verse)
-GNTD line 80 — DEU 3:0 -> target DEU 3:1
-  \s Insert Heading
-  \r (எண் 21:31-35)
-GNTD line 81 — DEU 3:11 -> target DEU 3:11
-  \s Insert Heading
-  \r (எண் 32:1-42)
-  \p (added immediately before target verse)
-GNTD line 82 — DEU 5:0 -> target DEU 5:1
-  \s Insert Heading
-  \r (யாத் 20:1-17)
-GNTD line 83 — DEU 5:22 -> target DEU 5:22
-  \s Insert Heading
-  \r (யாத் 20:18-21)
-  \p (added immediately before target verse)
-GNTD line 84 — DEU 7:0 -> target DEU 7:1
-  \s Insert Heading
-  \r (யாத் 34:11-16)
-GNTD line 85 — DEU 7:11 -> target DEU 7:11
-  \s Insert Heading
-  \r (உபா 28:1-14)
-  \p (added immediately before target verse)
-GNTD line 86 — DEU 10:0 -> target DEU 10:1
-  \s Insert Heading
-  \r (யாத் 34:1-10)
-GNTD line 87 — DEU 14:2 -> target DEU 14:2
-  \s Insert Heading
-  \r (லேவி 11:1-47)
-  \p (added immediately before target verse)
-GNTD line 88 — DEU 15:0 -> target DEU 15:1
-  \s Insert Heading
-  \r (லேவி 25:1-7)
-GNTD line 89 — DEU 15:11 -> target DEU 15:11
-  \s Insert Heading
-  \r (யாத் 21:1-11)
-  \p (added immediately before target verse)
-GNTD line 90 — DEU 16:0 -> target DEU 16:1
-  \s Insert Heading
-  \r (யாத் 12:1-20)
-GNTD line 91 — DEU 16:8 -> target DEU 16:8
-  \s Insert Heading
-  \r (யாத் 34:22; லேவி 23:15-21)
-  \p (added immediately before target verse)
-GNTD line 92 — DEU 16:12 -> target DEU 16:12
-  \s Insert Heading
-  \r (லேவி 23:33-43)
-  \p (added immediately before target verse)
-GNTD line 93 — DEU 19:0 -> target DEU 19:1
-  \s Insert Heading
-  \r (எண் 35:9-34; யோசு 20:1-9)
-GNTD line 94 — DEU 28:0 -> target DEU 28:1
-  \s Insert Heading
-  \r (லேவி 26:3-13; உபா 7:12-24)
-GNTD line 95 — DEU 28:14 -> target DEU 28:14
-  \s Insert Heading
-  \r (லேவி 26:14-46)
-  \p (added immediately before target verse)
+GNTD line 7 at GEN 36:0; target GEN 36:1
+Existing (kept): \r 1நாளா 1:35-37
+\r 1நாளா 1:34-37
 
-[JOS — 06JOSIRVTam.SFM]
-GNTD line 96 — JOS 15:12 -> target JOS 15:12
-  \s Insert Heading
-  \r (நியா 1:11-15)
-  \p (added immediately before target verse)
+GNTD line 8 at GEN 36:19; target GEN 36:20
+\s Insert Heading
+\r 1நாளா 1:38-42
 
-[JDG — 07JDGIRVTam.SFM]
-GNTD line 97 — JDG 1:10 -> target JDG 1:10
-  \s Insert Heading
-  \r (யோசு 15:13-19)
-  \p (added immediately before target verse)
+GNTD line 9 at GEN 36:29-30; target GEN 36:31
+\r 1நாளா 1:43-54
 
-[1SA — 091SAIRVTam.SFM]
-GNTD line 98 — 1SA 31:0 -> target 1SA 31:1
-  \s Insert Heading
-  \r (1நாளா 10:1-12)
+Exact references skipped: 1
 
-[2SA — 102SAIRVTam.SFM]
-GNTD line 99 — 2SA 5:0 -> target 2SA 5:1
-  \s Insert Heading
-  \r (1நாளா 11:1-9; 1நாளா 14:1-7)
-GNTD line 100 — 2SA 5:16 -> target 2SA 5:16
-  \s Insert Heading
-  \r (1நாளா 14:8-17)
-  \p (added immediately before target verse)
-GNTD line 101 — 2SA 6:0 -> target 2SA 6:1
-  \s Insert Heading
-  \r (1நாளா 13:1-14; 1நாளா 15:25—16:6,43)
-GNTD line 102 — 2SA 7:0 -> target 2SA 7:1
-  \s Insert Heading
-  \r (1நாளா 17:1-15)
-GNTD line 103 — 2SA 7:17 -> target 2SA 7:17
-  \s Insert Heading
-  \r (1நாளா 17:16-27)
-  \p (added immediately before target verse)
-GNTD line 104 — 2SA 8:0 -> target 2SA 8:1
-  \s Insert Heading
-  \r (1நாளா 18:1-17)
-GNTD line 105 — 2SA 10:0 -> target 2SA 10:1
-  \s Insert Heading
-  \r (1நாளா 19:1-19)
-GNTD line 106 — 2SA 12:25 -> target 2SA 12:25
-  \s Insert Heading
-  \r (1நாளா 20:1-3)
-  \p (added immediately before target verse)
-GNTD line 107 — 2SA 21:14 -> target 2SA 21:14
-  \s Insert Heading
-  \r (1நாளா 20:4-8)
-  \p (added immediately before target verse)
-GNTD line 108 — 2SA 22:0 -> target 2SA 22:1
-  \s Insert Heading
-  \r (சங் 18)
-GNTD line 109 — 2SA 23:7 -> target 2SA 23:7
-  \s Insert Heading
-  \r (1நாளா 11:10-41)
-  \p (added immediately before target verse)
-GNTD line 110 — 2SA 24:0 -> target 2SA 24:1
-  \s Insert Heading
-  \r (1நாளா 21:1-27)
+02EXOIRVTam.SFM: 17 change(s)
+GNTD line 10 at EXO 17:0; target EXO 17:1
+\r எண் 20:1-13
 
-[1KI — 111KIIRVTam.SFM]
-GNTD line 111 — 1KI 3:0 -> target 1KI 3:1
-  \s Insert Heading
-  \r (2நாளா 1:3-12)
-GNTD line 112 — 1KI 5:0 -> target 1KI 5:1
-  \s Insert Heading
-  \r (2நாளா 2:1-18)
-GNTD line 113 — 1KI 6:14 -> target 1KI 6:14
-  \s Insert Heading
-  \r (2நாளா 3:8-14)
-  \p (added immediately before target verse)
-GNTD line 114 — 1KI 7:12 -> target 1KI 7:12
-  \s Insert Heading
-  \r (2நாளா 2:13,14)
-  \p (added immediately before target verse)
-GNTD line 115 — 1KI 7:14 -> target 1KI 7:14
-  \s Insert Heading
-  \r (2நாளா 3:15-17)
-  \p (added immediately before target verse)
-GNTD line 116 — 1KI 7:22 -> target 1KI 7:22
-  \s Insert Heading
-  \r (2நாளா 4:2-5)
-  \p (added immediately before target verse)
-GNTD line 117 — 1KI 7:39 -> target 1KI 7:39
-  \s Insert Heading
-  \r (2நாளா 4:11—5:1)
-  \p (added immediately before target verse)
-GNTD line 118 — 1KI 8:0 -> target 1KI 8:1
-  \s Insert Heading
-  \r (2நாளா 5:2—6:2)
-GNTD line 119 — 1KI 8:13 -> target 1KI 8:13
-  \s Insert Heading
-  \r (2நாளா 6:3-11)
-  \p (added immediately before target verse)
-GNTD line 120 — 1KI 8:21 -> target 1KI 8:21
-  \s Insert Heading
-  \r (2நாளா 6:12-42)
-  \p (added immediately before target verse)
-GNTD line 121 — 1KI 8:61 -> target 1KI 8:61
-  \s Insert Heading
-  \r (2நாளா 7:4-10)
-  \p (added immediately before target verse)
-GNTD line 122 — 1KI 9:0 -> target 1KI 9:1
-  \s Insert Heading
-  \r (2நாளா 7:11-22)
-GNTD line 123 — 1KI 9:9 -> target 1KI 9:9
-  \s Insert Heading
-  \r (2நாளா 8:1,2)
-  \p (added immediately before target verse)
-GNTD line 124 — 1KI 9:14 -> target 1KI 9:14
-  \s Insert Heading
-  \r (2நாளா 8:3-18)
-  \p (added immediately before target verse)
-GNTD line 125 — 1KI 10:0 -> target 1KI 10:1
-  \s Insert Heading
-  \r (2நாளா 9:1-12)
-GNTD line 126 — 1KI 10:13 -> target 1KI 10:13
-  \s Insert Heading
-  \r (2நாளா 9:13-29)
-  \p (added immediately before target verse)
-GNTD line 127 — 1KI 11:40 -> target 1KI 11:40
-  \s Insert Heading
-  \r (2நாளா 9:29-31)
-  \p (added immediately before target verse)
-GNTD line 128 — 1KI 12:0 -> target 1KI 12:1
-  \s Insert Heading
-  \r (2நாளா 10:1-19)
-GNTD line 129 — 1KI 12:20 -> target 1KI 12:20
-  \s Insert Heading
-  \r (2நாளா 11:1-4)
-  \p (added immediately before target verse)
-GNTD line 130 — 1KI 14:20 -> target 1KI 14:20
-  \s Insert Heading
-  \r (2நாளா 11:5—12:15)
-  \p (added immediately before target verse)
-GNTD line 131 — 1KI 15:0 -> target 1KI 15:1
-  \s Insert Heading
-  \r (2நாளா 13:1—14:1)
-GNTD line 132 — 1KI 15:8 -> target 1KI 15:8
-  \s Insert Heading
-  \r (2நாளா 14:1-5; 2நாளா 15:16—16:6,11-14)
-  \p (added immediately before target verse)
-GNTD line 133 — 1KI 22:0 -> target 1KI 22:1
-  \s Insert Heading
-  \r (2நாளா 18:2-27)
-GNTD line 134 — 1KI 22:28 -> target 1KI 22:28
-  \s Insert Heading
-  \r (2நாளா 18:28-34)
-  \p (added immediately before target verse)
-GNTD line 135 — 1KI 22:40 -> target 1KI 22:40
-  \s Insert Heading
-  \r (2நாளா 20:31—21:1)
-  \p (added immediately before target verse)
+GNTD line 11 at EXO 18:12; target EXO 18:13
+Existing (kept): \r உபா 1:1-18
+\r உபா 1:9-18
 
-[2KI — 122KIIRVTam.SFM]
-GNTD line 136 — 2KI 8:15 -> target 2KI 8:15
-  \s Insert Heading
-  \r (2நாளா 21:1-20)
-  \p (added immediately before target verse)
-GNTD line 137 — 2KI 8:24 -> target 2KI 8:24
-  \s Insert Heading
-  \r (2நாளா 22:1-6)
-  \p (added immediately before target verse)
-GNTD line 138 — 2KI 11:0 -> target 2KI 11:1
-  \s Insert Heading
-  \r (2நாளா 22:10—23:15)
-GNTD line 139 — 2KI 11:16 -> target 2KI 11:16
-  \s Insert Heading
-  \r (2நாளா 23:16-21)
-  \p (added immediately before target verse)
-GNTD line 140 — 2KI 12:0 -> target 2KI 12:1
-  \s Insert Heading
-  \r (2நாளா 24:1-16)
-GNTD line 141 — 2KI 14:0 -> target 2KI 14:1
-  \s Insert Heading
-  \r (2நாளா 25:1-24)
-GNTD line 142 — 2KI 14:16 -> target 2KI 14:16
-  \s Insert Heading
-  \r (2நாளா 25:25-28)
-  \p (added immediately before target verse)
-GNTD line 143 — 2KI 15:0 -> target 2KI 15:1
-  \s Insert Heading
-  \r (2நாளா 26:1-23)
-GNTD line 144 — 2KI 15:31 -> target 2KI 15:31
-  \s Insert Heading
-  \r (2நாளா 27:1-9)
-  \p (added immediately before target verse)
-GNTD line 145 — 2KI 16:0 -> target 2KI 16:1
-  \s Insert Heading
-  \r (2நாளா 28:1-27)
-GNTD line 146 — 2KI 18:0 -> target 2KI 18:1
-  \s Insert Heading
-  \r (2நாளா 29:1,2; 2நாளா 31:1)
-GNTD line 147 — 2KI 18:12 -> target 2KI 18:12
-  \s Insert Heading
-  \r (2நாளா 32:1-19; ஏசா 36:1-22)
-  \p (added immediately before target verse)
-GNTD line 148 — 2KI 19:0 -> target 2KI 19:1
-  \s Insert Heading
-  \r (ஏசா 37:1-7)
-GNTD line 149 — 2KI 19:7 -> target 2KI 19:7
-  \s Insert Heading
-  \r (ஏசா 37:8-20)
-  \p (added immediately before target verse)
-GNTD line 150 — 2KI 19:19 -> target 2KI 19:19
-  \s Insert Heading
-  \r (ஏசா 37:21-38)
-  \p (added immediately before target verse)
-GNTD line 151 — 2KI 20:0 -> target 2KI 20:1
-  \s Insert Heading
-  \r (ஏசா 38:1-8,21,22; 2நாளா 32:24-26)
-GNTD line 152 — 2KI 20:11 -> target 2KI 20:11
-  \s Insert Heading
-  \r (ஏசா 39:1-8)
-  \p (added immediately before target verse)
-GNTD line 153 — 2KI 20:19 -> target 2KI 20:19
-  \s Insert Heading
-  \r (2நாளா 32:32,33)
-  \p (added immediately before target verse)
-GNTD line 154 — 2KI 21:0 -> target 2KI 21:1
-  \s Insert Heading
-  \r (2நாளா 33:1-20)
-GNTD line 155 — 2KI 21:18 -> target 2KI 21:18
-  \s Insert Heading
-  \r (2நாளா 33:21-25)
-  \p (added immediately before target verse)
-GNTD line 156 — 2KI 22:0 -> target 2KI 22:1
-  \s Insert Heading
-  \r (2நாளா 34:1,2)
-GNTD line 157 — 2KI 22:2 -> target 2KI 22:2
-  \s Insert Heading
-  \r (2நாளா 34:8-28)
-  \p (added immediately before target verse)
-GNTD line 158 — 2KI 23:0 -> target 2KI 23:1
-  \s Insert Heading
-  \r (2நாளா 34:3-7,29-33)
-GNTD line 159 — 2KI 23:20 -> target 2KI 23:20
-  \s Insert Heading
-  \r (2நாளா 35:1-19)
-  \p (added immediately before target verse)
-GNTD line 160 — 2KI 23:27 -> target 2KI 23:27
-  \s Insert Heading
-  \r (2நாளா 35:20—36:1)
-  \p (added immediately before target verse)
-GNTD line 161 — 2KI 23:30 -> target 2KI 23:30
-  \s Insert Heading
-  \r (2நாளா 36:2-4)
-  \p (added immediately before target verse)
-GNTD line 162 — 2KI 23:34 -> target 2KI 23:34
-  \s Insert Heading
-  \r (2நாளா 36:5-8)
-  \p (added immediately before target verse)
-GNTD line 163 — 2KI 24:7 -> target 2KI 24:7
-  \s Insert Heading
-  \r (2நாளா 36:9,10)
-  \p (added immediately before target verse)
-GNTD line 164 — 2KI 24:17 -> target 2KI 24:17
-  \s Insert Heading
-  \r (2நாளா 36:11,12; எரே 52:1-3a)
-  \p (added immediately before target verse)
-GNTD line 165 — 2KI 25:0 -> target 2KI 25:1
-  \s Insert Heading
-  \r (2நாளா 36:13-21; எரே 52:3b-11)
-GNTD line 166 — 2KI 25:7 -> target 2KI 25:7
-  \s Insert Heading
-  \r (எரே 52:12-33)
-  \p (added immediately before target verse)
-GNTD line 167 — 2KI 25:17 -> target 2KI 25:17
-  \s Insert Heading
-  \r (எரே 52:24-27)
-  \p (added immediately before target verse)
-GNTD line 168 — 2KI 25:21 -> target 2KI 25:21
-  \s Insert Heading
-  \r (எரே 40:7-9; எரே 41:1-3)
-  \p (added immediately before target verse)
-GNTD line 169 — 2KI 25:26 -> target 2KI 25:26
-  \s Insert Heading
-  \r (எரே 52:31-34)
-  \p (added immediately before target verse)
+GNTD line 13 at EXO 20:17; target EXO 20:18
+\s Insert Heading
+\r உபா 5:22-33
 
-[1CH — 131CHIRVTam.SFM]
-GNTD line 170 — 1CH 1:0 -> target 1CH 1:1
-  \s Insert Heading
-  \r (ஆதி 5:1-32; ஆதி 10:1-32; ஆதி 11:10-26)
-GNTD line 171 — 1CH 1:27 -> target 1CH 1:27
-  \s Insert Heading
-  \r (ஆதி 25:12-16)
-  \p (added immediately before target verse)
-GNTD line 172 — 1CH 1:33 -> target 1CH 1:33
-  \s Insert Heading
-  \r (ஆதி 36:1-19)
-  \p (added immediately before target verse)
-GNTD line 173 — 1CH 1:37 -> target 1CH 1:37
-  \s Insert Heading
-  \r (ஆதி 36:20-30)
-  \p (added immediately before target verse)
-GNTD line 174 — 1CH 1:38-42 -> target 1CH 1:38
-  \s Insert Heading
-  \r (ஆதி 36:31-43)
-GNTD line 175 — 1CH 9:34 -> target 1CH 9:34
-  \s Insert Heading
-  \r (1நாளா 8:29-38)
-  \p (added immediately before target verse)
-GNTD line 176 — 1CH 10:0 -> target 1CH 10:1
-  \s Insert Heading
-  \r (1சாமு 31:1-13)
-GNTD line 177 — 1CH 11:0 -> target 1CH 11:1
-  \s Insert Heading
-  \r (2சாமு 5:1-10)
-GNTD line 178 — 1CH 11:9 -> target 1CH 11:9
-  \s Insert Heading
-  \r (2சாமு 23:8-39)
-  \p (added immediately before target verse)
-GNTD line 179 — 1CH 13:0 -> target 1CH 13:1
-  \s Insert Heading
-  \r (2சாமு 6:1-11)
-GNTD line 180 — 1CH 14:0 -> target 1CH 14:1
-  \s Insert Heading
-  \r (2சாமு 5:11-16)
-GNTD line 181 — 1CH 14:7 -> target 1CH 14:7
-  \s Insert Heading
-  \r (2சாமு 5:17-25)
-  \p (added immediately before target verse)
-GNTD line 182 — 1CH 15:23-24 -> target 1CH 15:23
-  \s Insert Heading
-  \r (2சாமு 6:12-22)
-  \p (added immediately before target verse)
-GNTD line 183 — 1CH 16:7 -> target 1CH 16:7
-  \s Insert Heading
-  \r (சங் 105:1-15; சங் 96:1-13; சங் 106:1,47,48)
-GNTD line 184 — 1CH 17:0 -> target 1CH 17:1
-  \s Insert Heading
-  \r (2சாமு 7:1-17)
-GNTD line 185 — 1CH 17:15 -> target 1CH 17:15
-  \s Insert Heading
-  \r (2சாமு 7:18-29)
-  \p (added immediately before target verse)
-GNTD line 186 — 1CH 18:0 -> target 1CH 18:1
-  \s Insert Heading
-  \r (2சாமு 8:1-18)
-GNTD line 187 — 1CH 19:0 -> target 1CH 19:1
-  \s Insert Heading
-  \r (2சாமு 10:1-19)
-GNTD line 188 — 1CH 20:0 -> target 1CH 20:1
-  \s Insert Heading
-  \r (2சாமு 12:26-31)
-GNTD line 189 — 1CH 20:3 -> target 1CH 20:3
-  \s Insert Heading
-  \r (2சாமு 21:15-22)
-  \p (added immediately before target verse)
-GNTD line 190 — 1CH 21:0 -> target 1CH 21:1
-  \s Insert Heading
-  \r (2சாமு 24:1-25)
+GNTD line 15 at EXO 23:13; target EXO 23:14
+Existing (kept): \r யாத் 34:18-26; உபா 16:9-17
+\r யாத் 34:18-26; உபா 16:1-17
 
-[2CH — 142CHIRVTam.SFM]
-GNTD line 191 — 2CH 1:0 -> target 2CH 1:1
-  \s Insert Heading
-  \r (1இராஜா 3:1-15)
-GNTD line 192 — 2CH 1:12 -> target 2CH 1:12
-  \s Insert Heading
-  \r (1இராஜா 10:26-29)
-  \p (added immediately before target verse)
-GNTD line 193 — 2CH 2:0 -> target 2CH 2:1
-  \s Insert Heading
-  \r (1இராஜா 5:1-18)
-GNTD line 194 — 2CH 2:16 -> target 2CH 2:16
-  \s Insert Heading
-  \r (1இராஜா 6:1-38)
-  \p (added immediately before target verse)
-GNTD line 195 — 2CH 3:14 -> target 2CH 3:14
-  \s Insert Heading
-  \r (1இராஜா 7:15-22)
-  \p (added immediately before target verse)
-GNTD line 196 — 2CH 4:0 -> target 2CH 4:1
-  \s Insert Heading
-  \r (1இராஜா 7:23-51)
-GNTD line 197 — 2CH 5:1 -> target 2CH 5:1
-  \s Insert Heading
-  \r (1இராஜா 8:1-9)
-GNTD line 198 — 2CH 6:0 -> target 2CH 6:1
-  \s Insert Heading
-  \r (1இராஜா 8:12-21)
-GNTD line 199 — 2CH 6:11 -> target 2CH 6:11
-  \s Insert Heading
-  \r (1இராஜா 8:22-53)
-  \p (added immediately before target verse)
-GNTD line 200 — 2CH 7:0 -> target 2CH 7:1
-  \s Insert Heading
-  \r (1இராஜா 8:62-66)
-GNTD line 201 — 2CH 7:10 -> target 2CH 7:10
-  \s Insert Heading
-  \r (1இராஜா 9:1-9)
-  \p (added immediately before target verse)
-GNTD line 202 — 2CH 8:0 -> target 2CH 8:1
-  \s Insert Heading
-  \r (1இராஜா 9:10-28)
-GNTD line 203 — 2CH 9:0 -> target 2CH 9:1
-  \s Insert Heading
-  \r (1இராஜா 10:1-13)
-GNTD line 204 — 2CH 9:12 -> target 2CH 9:12
-  \s Insert Heading
-  \r (1இராஜா 10:14-25)
-  \p (added immediately before target verse)
-GNTD line 205 — 2CH 9:28 -> target 2CH 9:28
-  \s Insert Heading
-  \r (1இராஜா 11:41-43)
-  \p (added immediately before target verse)
-GNTD line 206 — 2CH 10:0 -> target 2CH 10:1
-  \s Insert Heading
-  \r (1இராஜா 12:1-20)
-GNTD line 207 — 2CH 11:0 -> target 2CH 11:1
-  \s Insert Heading
-  \r (1இராஜா 12:21-24)
-GNTD line 208 — 2CH 12:0 -> target 2CH 12:1
-  \s Insert Heading
-  \r (1இராஜா 14:25-28)
-GNTD line 209 — 2CH 13:0 -> target 2CH 13:1
-  \s Insert Heading
-  \r (1இராஜா 15:1-8)
-GNTD line 210 — 2CH 16:0 -> target 2CH 16:1
-  \s Insert Heading
-  \r (1இராஜா 15:17-22)
-GNTD line 211 — 2CH 16:10 -> target 2CH 16:10
-  \s Insert Heading
-  \r (1இராஜா 15:23,24)
-  \p (added immediately before target verse)
-GNTD line 212 — 2CH 18:0 -> target 2CH 18:1
-  \s Insert Heading
-  \r (1இராஜா 22:1-28)
-GNTD line 213 — 2CH 18:27 -> target 2CH 18:27
-  \s Insert Heading
-  \r (1இராஜா 22:29-35)
-  \p (added immediately before target verse)
-GNTD line 214 — 2CH 20:30 -> target 2CH 20:30
-  \s Insert Heading
-  \r (1இராஜா 22:41-50)
-  \p (added immediately before target verse)
-GNTD line 215 — 2CH 21:1 -> target 2CH 21:1
-  \s Insert Heading
-  \r (2இராஜா 8:17-24)
-GNTD line 216 — 2CH 22:0 -> target 2CH 22:1
-  \s Insert Heading
-  \r (2இராஜா 8:25-29; 2இராஜா 9:21-28)
-GNTD line 217 — 2CH 22:9 -> target 2CH 22:9
-  \s Insert Heading
-  \r (2இராஜா 11:1-3)
-  \p (added immediately before target verse)
-GNTD line 218 — 2CH 23:0 -> target 2CH 23:1
-  \s Insert Heading
-  \r (2இராஜா 11:4-16)
-GNTD line 219 — 2CH 23:15 -> target 2CH 23:15
-  \s Insert Heading
-  \r (2இராஜா 11:17-20)
-  \p (added immediately before target verse)
-GNTD line 220 — 2CH 24:0 -> target 2CH 24:1
-  \s Insert Heading
-  \r (2இராஜா 12:1-16)
-GNTD line 221 — 2CH 25:0 -> target 2CH 25:1
-  \s Insert Heading
-  \r (2இராஜா 14:2-6)
-GNTD line 222 — 2CH 25:4 -> target 2CH 25:4
-  \s Insert Heading
-  \r (2இராஜா 14:7)
-  \p (added immediately before target verse)
-GNTD line 223 — 2CH 25:16 -> target 2CH 25:16
-  \s Insert Heading
-  \r (2இராஜா 14:8-20)
-  \p (added immediately before target verse)
-GNTD line 224 — 2CH 26:0 -> target 2CH 26:1
-  \s Insert Heading
-  \r (2இராஜா 14:21,22; 2இராஜா 15:1-7)
-GNTD line 225 — 2CH 27:0 -> target 2CH 27:1
-  \s Insert Heading
-  \r (2இராஜா 15:32-38)
-GNTD line 226 — 2CH 28:0 -> target 2CH 28:1
-  \s Insert Heading
-  \r (2இராஜா 16:1-4)
-GNTD line 227 — 2CH 28:4 -> target 2CH 28:4
-  \s Insert Heading
-  \r (2இராஜா 16:5)
-  \p (added immediately before target verse)
-GNTD line 228 — 2CH 28:15 -> target 2CH 28:15
-  \s Insert Heading
-  \r (2இராஜா 16:7-9)
-  \p (added immediately before target verse)
-GNTD line 229 — 2CH 29:0 -> target 2CH 29:1
-  \s Insert Heading
-  \r (2இராஜா 18:1-3)
-GNTD line 230 — 2CH 32:0 -> target 2CH 32:1
-  \s Insert Heading
-  \r (2இராஜா 18:13-37; 2இராஜா 19:14-19,35-37; ஏசா 36:1-22; ஏசா 37:8-38)
-GNTD line 231 — 2CH 32:23 -> target 2CH 32:23
-  \s Insert Heading
-  \r (2இராஜா 20:1-3,12-19; ஏசா 38:1-3; ஏசா 39:1-8)
-  \p (added immediately before target verse)
-GNTD line 232 — 2CH 32:31 -> target 2CH 32:31
-  \s Insert Heading
-  \r (2இராஜா 20:20,21)
-  \p (added immediately before target verse)
-GNTD line 233 — 2CH 33:0 -> target 2CH 33:1
-  \s Insert Heading
-  \r (2இராஜா 21:1-9)
-GNTD line 234 — 2CH 33:17 -> target 2CH 33:17
-  \s Insert Heading
-  \r (2இராஜா 21:17,18)
-  \p (added immediately before target verse)
-GNTD line 235 — 2CH 33:20 -> target 2CH 33:20
-  \s Insert Heading
-  \r (2இராஜா 21:19-26)
-  \p (added immediately before target verse)
-GNTD line 236 — 2CH 34:0 -> target 2CH 34:1
-  \s Insert Heading
-  \r (2இராஜா 22:1,2)
-GNTD line 237 — 2CH 34:7 -> target 2CH 34:7
-  \s Insert Heading
-  \r (2இராஜா 22:3-20)
-  \p (added immediately before target verse)
-GNTD line 238 — 2CH 34:28 -> target 2CH 34:28
-  \s Insert Heading
-  \r (2இராஜா 23:1-20)
-  \p (added immediately before target verse)
-GNTD line 239 — 2CH 35:0 -> target 2CH 35:1
-  \s Insert Heading
-  \r (2இராஜா 23:21-23)
-GNTD line 240 — 2CH 35:19 -> target 2CH 35:19
-  \s Insert Heading
-  \r (2இராஜா 23:28-30)
-  \p (added immediately before target verse)
-GNTD line 241 — 2CH 36:0 -> target 2CH 36:1
-  \s Insert Heading
-  \r (2இராஜா 23:30-35)
-GNTD line 242 — 2CH 36:4 -> target 2CH 36:4
-  \s Insert Heading
-  \r (2இராஜா 23:36—24:7)
-  \p (added immediately before target verse)
-GNTD line 243 — 2CH 36:8 -> target 2CH 36:8
-  \s Insert Heading
-  \r (2இராஜா 24:8-17)
-  \p (added immediately before target verse)
-GNTD line 244 — 2CH 36:10 -> target 2CH 36:10
-  \s Insert Heading
-  \r (2இராஜா 24:18-20; எரே 52:1-3a)
-  \p (added immediately before target verse)
-GNTD line 245 — 2CH 36:12 -> target 2CH 36:12
-  \s Insert Heading
-  \r (2இராஜா 25:1-21; எரே 52:3b-11)
-  \p (added immediately before target verse)
-GNTD line 246 — 2CH 36:21 -> target 2CH 36:21
-  \s Insert Heading
-  \r (எஸ்றா 1:1-4)
-  \p (added immediately before target verse)
+GNTD line 16 at EXO 25:0; target EXO 25:1
+Existing (kept): \r யாத் 39:4-9
+\r யாத் 35:4-9
 
-[EZR — 15EZRIRVTam.SFM]
-GNTD line 247 — EZR 2:0 -> target EZR 2:1
-  \s Insert Heading
-  \r (நெகே 7:4-73)
+GNTD line 17 at EXO 25:9; target EXO 25:10
+\r யாத் 37:1-9
 
-[NEH — 16NEHIRVTam.SFM]
-GNTD line 248 — NEH 7:3 -> target NEH 7:3
-  \s Insert Heading
-  \r (எஸ்றா 2:1-70)
-  \p (added immediately before target verse)
+GNTD line 18 at EXO 25:22; target EXO 25:23
+\r யாத் 37:10-16
 
-[PSA — 19PSAIRVTam.SFM]
-GNTD line 249 — PSA 14:0 -> target PSA 14:1
-  \s Insert Heading
-  \r (சங் 53)
-  \p (added immediately before target verse)
-GNTD line 250 — PSA 18:0 -> target PSA 18:1
-  \s Insert Heading
-  \r (2சாமு 22:1-51)
-  \p (added immediately before target verse)
-GNTD line 251 — PSA 40:11 -> target PSA 40:11
-  \s Insert Heading
-  \r (சங் 70)
-  \p (added immediately before target verse)
-GNTD line 252 — PSA 53:0 -> target PSA 53:1
-  \s Insert Heading
-  \r (சங் 14)
-  \p (added immediately before target verse)
-GNTD line 253 — PSA 70:0 -> target PSA 70:1
-  \s Insert Heading
-  \r (சங் 40:13-17)
-  \p (added immediately before target verse)
-GNTD line 254 — PSA 96:0 -> target PSA 96:1
-  \s Insert Heading
-  \r (1நாளா 16:23-33)
-  \p (added immediately before target verse)
-GNTD line 255 — PSA 105:0 -> target PSA 105:1
-  \s Insert Heading
-  \r (1நாளா 16:8-22)
-  \p (added immediately before target verse)
-GNTD line 256 — PSA 108:0 -> target PSA 108:1
-  \s Insert Heading
-  \r (சங் 57:7-11; சங் 60:5-12)
-  \p (added immediately before target verse)
+GNTD line 19 at EXO 25:30; target EXO 25:31
+Existing (kept): \r யாத் 37:17-22
+\r யாத் 37:17-24
 
-[ISA — 23ISAIRVTam.SFM]
-GNTD line 257 — ISA 2:0 -> target ISA 2:1
-  \s Insert Heading
-  \r (மீகா 4:1-3)
-GNTD line 258 — ISA 36:0 -> target ISA 36:1
-  \s Insert Heading
-  \r (2இராஜா 18:13-27; 2நாளா 32:1-19)
-GNTD line 259 — ISA 37:0 -> target ISA 37:1
-  \s Insert Heading
-  \r (2இராஜா 19:1-7)
-GNTD line 260 — ISA 37:7 -> target ISA 37:7
-  \s Insert Heading
-  \r (2இராஜா 19:8-19)
-  \p (added immediately before target verse)
-GNTD line 261 — ISA 37:20 -> target ISA 37:20
-  \s Insert Heading
-  \r (2இராஜா 19:20-37)
-  \p (added immediately before target verse)
-GNTD line 262 — ISA 38:0 -> target ISA 38:1
-  \s Insert Heading
-  \r (2இராஜா 20:1-11; 2நாளா 32:24-26)
-GNTD line 263 — ISA 39:0 -> target ISA 39:1
-  \s Insert Heading
-  \r (2இராஜா 20:12-19)
+GNTD line 24 at EXO 28:0; target EXO 28:1
+Existing (kept): \r யாத் 39:1
+\r யாத் 39:1-7
 
-[JER — 24JERIRVTam.SFM]
-GNTD line 264 — JER 40:6 -> target JER 40:6
-  \s Insert Heading
-  \r (2இராஜா 25:22-24)
-  \p (added immediately before target verse)
-GNTD line 265 — JER 40:12 -> target JER 40:12
-  \s Insert Heading
-  \r (2இராஜா 25:25,26)
-  \p (added immediately before target verse)
-GNTD line 266 — JER 52:0 -> target JER 52:1
-  \s Insert Heading
-  \r (2இராஜா 24:18—25:7)
-GNTD line 267 — JER 52:11 -> target JER 52:11
-  \s Insert Heading
-  \r (2இராஜா 25:8-17)
-  \p (added immediately before target verse)
-GNTD line 268 — JER 52:23 -> target JER 52:23
-  \s Insert Heading
-  \r (2இராஜா 25:18-21,27-30)
-  \p (added immediately before target verse)
+GNTD line 32 at EXO 34:0; target EXO 34:1
+Existing (kept): \r உபா 1:1-5
+\r உபா 10:1-5
 
-[EZK — 26EZKIRVTam.SFM]
-GNTD line 269 — EZK 3:15 -> target EZK 3:15
-  \s Insert Heading
-  \r (எசேக் 33:1-9)
-  \p (added immediately before target verse)
-GNTD line 270 — EZK 33:0 -> target EZK 33:1
-  \s Insert Heading
-  \r (எசேக் 3:16-21)
-GNTD line 271 — EZK 45:17 -> target EZK 45:17
-  \s Insert Heading
-  \r (யாத் 12:1-20; லேவி 23:33-43)
-  \p (added immediately before target verse)
+GNTD line 33 at EXO 34:9; target EXO 34:10
+Existing (kept): \r யாத் 14:23; உபா 7:1-5; 16:1-17
+\r யாத் 23:14-19; உபா 7:1-5; உபா 16:1-17
 
-[MIC — 33MICIRVTam.SFM]
-GNTD line 272 — MIC 4:0 -> target MIC 4:1
-  \s Insert Heading
-  \r (ஏசா 2:2-4)
+GNTD line 34 at EXO 35:3; target EXO 35:4
+Existing (kept): \r யாத் 25:1-9; 39:32-43
+\r யாத் 25:1-9
+
+GNTD line 35 at EXO 35:9; target EXO 35:10
+Added \p immediately before target verse
+
+GNTD line 35 at EXO 35:9; target EXO 35:10
+\s Insert Heading
+\r யாத் 39:32-43
+
+GNTD line 44 at EXO 38:7; target EXO 38:8
+\s Insert Heading
+\r யாத் 30:18
+
+GNTD line 46 at EXO 39:0; target EXO 39:1
+Existing (kept): \r யாத் 28:1-4
+\r யாத் 28:1-14
+
+GNTD line 47 at EXO 39:7; target EXO 39:8
+Existing (kept): \r யாத் 38:15-30
+\r யாத் 28:15-30
+
+Exact references skipped: 25
+
+03LEVIRVTam.SFM: 17 change(s)
+GNTD line 51 at LEV 8:0; target LEV 8:1
+\r யாத் 29:1-37
+
+GNTD line 52 at LEV 11:0; target LEV 11:1
+\r உபா 14:3-21
+
+GNTD line 53 at LEV 23:4; target LEV 23:5
+Added \p immediately before target verse
+
+GNTD line 53 at LEV 23:4; target LEV 23:5
+\s Insert Heading
+\r எண் 28:16-25
+
+GNTD line 54 at LEV 23:14; target LEV 23:15
+Added \p immediately before target verse
+
+GNTD line 54 at LEV 23:14; target LEV 23:15
+\s Insert Heading
+\r எண் 28:26-31
+
+GNTD line 55 at LEV 23:22; target LEV 23:23
+Added \p immediately before target verse
+
+GNTD line 55 at LEV 23:22; target LEV 23:23
+\s Insert Heading
+\r எண் 29:1-6
+
+GNTD line 56 at LEV 23:25; target LEV 23:26
+Added \p immediately before target verse
+
+GNTD line 56 at LEV 23:25; target LEV 23:26
+\s Insert Heading
+\r எண் 29:7-11
+
+GNTD line 57 at LEV 23:32; target LEV 23:33
+Added \p immediately before target verse
+
+GNTD line 57 at LEV 23:32; target LEV 23:33
+\s Insert Heading
+\r எண் 29:12-40
+
+GNTD line 58 at LEV 24:0; target LEV 24:1
+\r யாத் 27:20,21
+
+GNTD line 59 at LEV 25:0; target LEV 25:1
+\r உபா 15:1-11
+
+GNTD line 60 at LEV 26:0; target LEV 26:1
+\r உபா 7:12-24; உபா 28:1-14
+
+GNTD line 61 at LEV 26:13; target LEV 26:14
+Added \p immediately before target verse
+
+GNTD line 61 at LEV 26:13; target LEV 26:14
+\s Insert Heading
+\r உபா 28:15-68
+
+Exact references skipped: 0
+
+04NUMIRVTam.SFM: 16 change(s)
+GNTD line 62 at NUM 9:14; target NUM 9:15
+\r யாத் 40:34-38
+
+GNTD line 63 at NUM 13:0; target NUM 13:1
+\r உபா 1:19-33
+
+GNTD line 64 at NUM 14:38; target NUM 14:39
+Added \p immediately before target verse
+
+GNTD line 64 at NUM 14:38; target NUM 14:39
+\s Insert Heading
+\r உபா 1:41-46
+
+GNTD line 65 at NUM 20:0; target NUM 20:1
+\r யாத் 17:1-7
+
+GNTD line 66 at NUM 21:20; target NUM 21:21
+\r உபா 2:26—3:11
+
+GNTD line 67 at NUM 27:11; target NUM 27:12
+\r உபா 31:1-8
+
+GNTD line 68 at NUM 28:0; target NUM 28:1
+\r யாத் 29:38-46
+
+GNTD line 69 at NUM 28:15; target NUM 28:16
+\r லேவி 23:5-14
+
+GNTD line 70 at NUM 28:25; target NUM 28:26
+\r லேவி 23:15-22
+
+GNTD line 71 at NUM 29:0; target NUM 29:1
+\r லேவி 23:23-25
+
+GNTD line 72 at NUM 29:6; target NUM 29:7
+\r லேவி 23:26-32
+
+GNTD line 73 at NUM 29:11; target NUM 29:12
+\r லேவி 23:33-44
+
+GNTD line 74 at NUM 32:0; target NUM 32:1
+\s Insert Heading
+\r உபா 3:12-22
+
+GNTD line 75 at NUM 35:8; target NUM 35:9
+Added \p immediately before target verse
+
+GNTD line 75 at NUM 35:8; target NUM 35:9
+\s Insert Heading
+\r உபா 19:1-13; யோசு 20:1-9
+
+Exact references skipped: 0
+
+05DEUIRVTam.SFM: 25 change(s)
+GNTD line 76 at DEU 1:8; target DEU 1:9
+\r யாத் 18:13-27
+
+GNTD line 77 at DEU 1:18; target DEU 1:19
+\r எண் 13:1-33
+
+GNTD line 78 at DEU 1:33; target DEU 1:34
+Added \p immediately before target verse
+
+GNTD line 78 at DEU 1:33; target DEU 1:34
+\s Insert Heading
+\r எண் 14:20-45
+
+GNTD line 79 at DEU 2:25; target DEU 2:26
+Added \p immediately before target verse
+
+GNTD line 79 at DEU 2:25; target DEU 2:26
+\s Insert Heading
+\r எண் 21:21-30
+
+GNTD line 80 at DEU 3:0; target DEU 3:1
+\r எண் 21:31-35
+
+GNTD line 81 at DEU 3:11; target DEU 3:12
+\r எண் 32:1-42
+
+GNTD line 82 at DEU 5:0; target DEU 5:1
+\r யாத் 20:1-17
+
+GNTD line 83 at DEU 5:22; target DEU 5:23
+Added \p immediately before target verse
+
+GNTD line 83 at DEU 5:22; target DEU 5:23
+\s Insert Heading
+\r யாத் 20:18-21
+
+GNTD line 84 at DEU 7:0; target DEU 7:1
+\r யாத் 34:11-16
+
+GNTD line 85 at DEU 7:11; target DEU 7:12
+Added \p immediately before target verse
+
+GNTD line 85 at DEU 7:11; target DEU 7:12
+\s Insert Heading
+\r உபா 28:1-14
+
+GNTD line 86 at DEU 10:0; target DEU 10:1
+\r யாத் 34:1-10
+
+GNTD line 87 at DEU 14:2; target DEU 14:3
+Added \p immediately before target verse
+
+GNTD line 87 at DEU 14:2; target DEU 14:3
+\s Insert Heading
+\r லேவி 11:1-47
+
+GNTD line 88 at DEU 15:0; target DEU 15:1
+\r லேவி 25:1-7
+
+GNTD line 89 at DEU 15:11; target DEU 15:12
+\r யாத் 21:1-11
+
+GNTD line 90 at DEU 16:0; target DEU 16:1
+\r யாத் 12:1-20
+
+GNTD line 91 at DEU 16:8; target DEU 16:9
+\r யாத் 34:22; லேவி 23:15-21
+
+GNTD line 92 at DEU 16:12; target DEU 16:13
+\r லேவி 23:33-43
+
+GNTD line 93 at DEU 19:0; target DEU 19:1
+\r எண் 35:9-34; யோசு 20:1-9
+
+GNTD line 94 at DEU 28:0; target DEU 28:1
+\r லேவி 26:3-13; உபா 7:12-24
+
+GNTD line 95 at DEU 28:14; target DEU 28:15
+\r லேவி 26:14-46
+
+Exact references skipped: 0
+
+06JOSIRVTam.SFM: 2 change(s)
+GNTD line 96 at JOS 15:12; target JOS 15:13
+Added \p immediately before target verse
+
+GNTD line 96 at JOS 15:12; target JOS 15:13
+\s Insert Heading
+\r நியா 1:11-15
+
+Exact references skipped: 0
+
+07JDGIRVTam.SFM: 1 change(s)
+GNTD line 97 at JDG 1:10; target JDG 1:11
+\r யோசு 15:13-19
+
+Exact references skipped: 0
+
+091SAIRVTam.SFM: 1 change(s)
+GNTD line 98 at 1SA 31:0; target 1SA 31:1
+\r 1நாளா 10:1-12
+
+Exact references skipped: 0
+
+102SAIRVTam.SFM: 13 change(s)
+GNTD line 99 at 2SA 5:0; target 2SA 5:1
+\r 1நாளா 11:1-9; 1நாளா 14:1-7
+
+GNTD line 100 at 2SA 5:16; target 2SA 5:17
+\r 1நாளா 14:8-17
+
+GNTD line 101 at 2SA 6:0; target 2SA 6:1
+\r 1நாளா 13:1-14; 1நாளா 15:25—16:6,43
+
+GNTD line 102 at 2SA 7:0; target 2SA 7:1
+\r 1நாளா 17:1-15
+
+GNTD line 103 at 2SA 7:17; target 2SA 7:18
+\r 1நாளா 17:16-27
+
+GNTD line 104 at 2SA 8:0; target 2SA 8:1
+\r 1நாளா 18:1-17
+
+GNTD line 105 at 2SA 10:0; target 2SA 10:1
+\r 1நாளா 19:1-19
+
+GNTD line 106 at 2SA 12:25; target 2SA 12:26
+Added \p immediately before target verse
+
+GNTD line 106 at 2SA 12:25; target 2SA 12:26
+\s Insert Heading
+\r 1நாளா 20:1-3
+
+GNTD line 107 at 2SA 21:14; target 2SA 21:15
+\r 1நாளா 20:4-8
+
+GNTD line 108 at 2SA 22:0; target 2SA 22:1
+\r சங் 18
+
+GNTD line 109 at 2SA 23:7; target 2SA 23:8
+\s Insert Heading
+\r 1நாளா 11:10-41
+
+GNTD line 110 at 2SA 24:0; target 2SA 24:1
+\r 1நாளா 21:1-27
+
+Exact references skipped: 0
+
+111KIIRVTam.SFM: 29 change(s)
+GNTD line 111 at 1KI 3:0; target 1KI 3:1
+\r 2நாளா 1:3-12
+
+GNTD line 112 at 1KI 5:0; target 1KI 5:1
+\r 2நாளா 2:1-18
+
+GNTD line 113 at 1KI 6:14; target 1KI 6:15
+\s Insert Heading
+\r 2நாளா 3:8-14
+
+GNTD line 114 at 1KI 7:12; target 1KI 7:13
+\r 2நாளா 2:13,14
+
+GNTD line 115 at 1KI 7:14; target 1KI 7:15
+Added \p immediately before target verse
+
+GNTD line 115 at 1KI 7:14; target 1KI 7:15
+\s Insert Heading
+\r 2நாளா 3:15-17
+
+GNTD line 116 at 1KI 7:22; target 1KI 7:23
+Added \p immediately before target verse
+
+GNTD line 116 at 1KI 7:22; target 1KI 7:23
+\s Insert Heading
+\r 2நாளா 4:2-5
+
+GNTD line 117 at 1KI 7:39; target 1KI 7:40
+Added \p immediately before target verse
+
+GNTD line 117 at 1KI 7:39; target 1KI 7:40
+\s Insert Heading
+\r 2நாளா 4:11—5:1
+
+GNTD line 118 at 1KI 8:0; target 1KI 8:1
+\r 2நாளா 5:2—6:2
+
+GNTD line 119 at 1KI 8:13; target 1KI 8:14
+Added \p immediately before target verse
+
+GNTD line 119 at 1KI 8:13; target 1KI 8:14
+\s Insert Heading
+\r 2நாளா 6:3-11
+
+GNTD line 120 at 1KI 8:21; target 1KI 8:22
+\r 2நாளா 6:12-42
+
+GNTD line 121 at 1KI 8:61; target 1KI 8:62
+\r 2நாளா 7:4-10
+
+GNTD line 122 at 1KI 9:0; target 1KI 9:1
+\r 2நாளா 7:11-22
+
+GNTD line 123 at 1KI 9:9; target 1KI 9:10
+\r 2நாளா 8:1,2
+
+GNTD line 124 at 1KI 9:14; target 1KI 9:15
+\s Insert Heading
+\r 2நாளா 8:3-18
+
+GNTD line 125 at 1KI 10:0; target 1KI 10:1
+\r 2நாளா 9:1-12
+
+GNTD line 126 at 1KI 10:13; target 1KI 10:14
+\r 2நாளா 9:13-29
+
+GNTD line 127 at 1KI 11:40; target 1KI 11:41
+\r 2நாளா 9:29-31
+
+GNTD line 128 at 1KI 12:0; target 1KI 12:1
+\r 2நாளா 10:1-19
+
+GNTD line 129 at 1KI 12:20; target 1KI 12:21
+\s Insert Heading
+\r 2நாளா 11:1-4
+
+GNTD line 130 at 1KI 14:20; target 1KI 14:21
+\r 2நாளா 11:5—12:15
+
+GNTD line 131 at 1KI 15:0; target 1KI 15:1
+\r 2நாளா 13:1—14:1
+
+GNTD line 132 at 1KI 15:8; target 1KI 15:9
+\r 2நாளா 14:1-5; 2நாளா 15:16—16:6,11-14
+
+GNTD line 133 at 1KI 22:0; target 1KI 22:1
+\r 2நாளா 18:2-27
+
+GNTD line 134 at 1KI 22:28; target 1KI 22:29
+\r 2நாளா 18:28-34
+
+GNTD line 135 at 1KI 22:40; target 1KI 22:41
+\r 2நாளா 20:31—21:1
+
+Exact references skipped: 0
+
+122KIIRVTam.SFM: 46 change(s)
+GNTD line 136 at 2KI 8:15; target 2KI 8:16
+\r 2நாளா 21:1-20
+
+GNTD line 137 at 2KI 8:24; target 2KI 8:25
+\r 2நாளா 22:1-6
+
+GNTD line 138 at 2KI 11:0; target 2KI 11:1
+\r 2நாளா 22:10—23:15
+
+GNTD line 139 at 2KI 11:16; target 2KI 11:17
+Added \p immediately before target verse
+
+GNTD line 139 at 2KI 11:16; target 2KI 11:17
+\s Insert Heading
+\r 2நாளா 23:16-21
+
+GNTD line 140 at 2KI 12:0; target 2KI 12:1
+\r 2நாளா 24:1-16
+
+GNTD line 141 at 2KI 14:0; target 2KI 14:1
+\r 2நாளா 25:1-24
+
+GNTD line 142 at 2KI 14:16; target 2KI 14:17
+Added \p immediately before target verse
+
+GNTD line 142 at 2KI 14:16; target 2KI 14:17
+\s Insert Heading
+\r 2நாளா 25:25-28
+
+GNTD line 143 at 2KI 15:0; target 2KI 15:1
+\r 2நாளா 26:1-23
+
+GNTD line 144 at 2KI 15:31; target 2KI 15:32
+\r 2நாளா 27:1-9
+
+GNTD line 145 at 2KI 16:0; target 2KI 16:1
+\r 2நாளா 28:1-27
+
+GNTD line 146 at 2KI 18:0; target 2KI 18:1
+\r 2நாளா 29:1,2; 2நாளா 31:1
+
+GNTD line 147 at 2KI 18:12; target 2KI 18:13
+Added \p immediately before target verse
+
+GNTD line 147 at 2KI 18:12; target 2KI 18:13
+\s Insert Heading
+\r 2நாளா 32:1-19; ஏசா 36:1-22
+
+GNTD line 148 at 2KI 19:0; target 2KI 19:1
+\r ஏசா 37:1-7
+
+GNTD line 149 at 2KI 19:7; target 2KI 19:8
+Added \p immediately before target verse
+
+GNTD line 149 at 2KI 19:7; target 2KI 19:8
+\s Insert Heading
+\r ஏசா 37:8-20
+
+GNTD line 150 at 2KI 19:19; target 2KI 19:20
+\r ஏசா 37:21-38
+
+GNTD line 151 at 2KI 20:0; target 2KI 20:1
+\r ஏசா 38:1-8,21,22; 2நாளா 32:24-26
+
+GNTD line 152 at 2KI 20:11; target 2KI 20:12
+\r ஏசா 39:1-8
+
+GNTD line 153 at 2KI 20:19; target 2KI 20:20
+Added \p immediately before target verse
+
+GNTD line 153 at 2KI 20:19; target 2KI 20:20
+\s Insert Heading
+\r 2நாளா 32:32,33
+
+GNTD line 154 at 2KI 21:0; target 2KI 21:1
+\r 2நாளா 33:1-20
+
+GNTD line 155 at 2KI 21:18; target 2KI 21:19
+\r 2நாளா 33:21-25
+
+GNTD line 156 at 2KI 22:0; target 2KI 22:1
+\r 2நாளா 34:1,2
+
+GNTD line 157 at 2KI 22:2; target 2KI 22:3
+Added \p immediately before target verse
+
+GNTD line 157 at 2KI 22:2; target 2KI 22:3
+\s Insert Heading
+\r 2நாளா 34:8-28
+
+GNTD line 158 at 2KI 23:0; target 2KI 23:1
+\r 2நாளா 34:3-7,29-33
+
+GNTD line 159 at 2KI 23:20; target 2KI 23:21
+Added \p immediately before target verse
+
+GNTD line 159 at 2KI 23:20; target 2KI 23:21
+\s Insert Heading
+\r 2நாளா 35:1-19
+
+GNTD line 160 at 2KI 23:27; target 2KI 23:28
+Added \p immediately before target verse
+
+GNTD line 160 at 2KI 23:27; target 2KI 23:28
+\s Insert Heading
+\r 2நாளா 35:20—36:1
+
+GNTD line 161 at 2KI 23:30; target 2KI 23:31
+\r 2நாளா 36:2-4
+
+GNTD line 162 at 2KI 23:34; target 2KI 23:35
+Added \p immediately before target verse
+
+GNTD line 162 at 2KI 23:34; target 2KI 23:35
+\s Insert Heading
+\r 2நாளா 36:5-8
+
+GNTD line 163 at 2KI 24:7; target 2KI 24:8
+\r 2நாளா 36:9,10
+
+GNTD line 164 at 2KI 24:17; target 2KI 24:18
+\r 2நாளா 36:11,12; எரே 52:1-3a
+
+GNTD line 165 at 2KI 25:0; target 2KI 25:1
+\r 2நாளா 36:13-21; எரே 52:3b-11
+
+GNTD line 166 at 2KI 25:7; target 2KI 25:8
+Added \p immediately before target verse
+
+GNTD line 166 at 2KI 25:7; target 2KI 25:8
+\s Insert Heading
+\r எரே 52:12-33
+
+GNTD line 167 at 2KI 25:17; target 2KI 25:18
+Added \p immediately before target verse
+
+GNTD line 167 at 2KI 25:17; target 2KI 25:18
+\s Insert Heading
+\r எரே 52:24-27
+
+GNTD line 168 at 2KI 25:21; target 2KI 25:22
+Added \p immediately before target verse
+
+GNTD line 168 at 2KI 25:21; target 2KI 25:22
+\s Insert Heading
+\r எரே 40:7-9; எரே 41:1-3
+
+GNTD line 169 at 2KI 25:26; target 2KI 25:27
+\r எரே 52:31-34
+
+Exact references skipped: 0
+
+131CHIRVTam.SFM: 23 change(s)
+GNTD line 170 at 1CH 1:0; target 1CH 1:1
+\r ஆதி 5:1-32; ஆதி 10:1-32; ஆதி 11:10-26
+
+GNTD line 171 at 1CH 1:27; target 1CH 1:28
+\r ஆதி 25:12-16
+
+GNTD line 172 at 1CH 1:33; target 1CH 1:34
+\r ஆதி 36:1-19
+
+GNTD line 173 at 1CH 1:37; target 1CH 1:38
+\r ஆதி 36:20-30
+
+GNTD line 174 at 1CH 1:38-42; target 1CH 1:43
+\r ஆதி 36:31-43
+
+GNTD line 175 at 1CH 9:34; target 1CH 9:35
+\r 1நாளா 8:29-38
+
+GNTD line 176 at 1CH 10:0; target 1CH 10:1
+\r 1சாமு 31:1-13
+
+GNTD line 177 at 1CH 11:0; target 1CH 11:1
+\r 2சாமு 5:1-10
+
+GNTD line 178 at 1CH 11:9; target 1CH 11:10
+\r 2சாமு 23:8-39
+
+GNTD line 179 at 1CH 13:0; target 1CH 13:1
+\r 2சாமு 6:1-11
+
+GNTD line 180 at 1CH 14:0; target 1CH 14:1
+\r 2சாமு 5:11-16
+
+GNTD line 181 at 1CH 14:7; target 1CH 14:8
+\r 2சாமு 5:17-25
+
+GNTD line 182 at 1CH 15:23-24; target 1CH 15:25
+Added \p immediately before target verse
+
+GNTD line 182 at 1CH 15:23-24; target 1CH 15:25
+\s Insert Heading
+\r 2சாமு 6:12-22
+
+GNTD line 183 at 1CH 16:7; target 1CH 16:8
+Added \p immediately before target verse
+
+GNTD line 183 at 1CH 16:7; target 1CH 16:8
+\s Insert Heading
+\r சங் 105:1-15; சங் 96:1-13; சங் 106:1,47,48
+
+GNTD line 184 at 1CH 17:0; target 1CH 17:1
+\r 2சாமு 7:1-17
+
+GNTD line 185 at 1CH 17:15; target 1CH 17:16
+\r 2சாமு 7:18-29
+
+GNTD line 186 at 1CH 18:0; target 1CH 18:1
+\r 2சாமு 8:1-18
+
+GNTD line 187 at 1CH 19:0; target 1CH 19:1
+\r 2சாமு 10:1-19
+
+GNTD line 188 at 1CH 20:0; target 1CH 20:1
+\r 2சாமு 12:26-31
+
+GNTD line 189 at 1CH 20:3; target 1CH 20:4
+\r 2சாமு 21:15-22
+
+GNTD line 190 at 1CH 21:0; target 1CH 21:1
+\r 2சாமு 24:1-25
+
+Exact references skipped: 0
+
+142CHIRVTam.SFM: 66 change(s)
+GNTD line 191 at 2CH 1:0; target 2CH 1:1
+\r 1இராஜா 3:1-15
+
+GNTD line 192 at 2CH 1:12; target 2CH 1:13
+Added \p immediately before target verse
+
+GNTD line 192 at 2CH 1:12; target 2CH 1:13
+\s Insert Heading
+\r 1இராஜா 10:26-29
+
+GNTD line 193 at 2CH 2:0; target 2CH 2:1
+\r 1இராஜா 5:1-18
+
+GNTD line 194 at 2CH 2:16; target 2CH 2:17
+Added \p immediately before target verse
+
+GNTD line 194 at 2CH 2:16; target 2CH 2:17
+\s Insert Heading
+\r 1இராஜா 6:1-38
+
+GNTD line 195 at 2CH 3:14; target 2CH 3:15
+Added \p immediately before target verse
+
+GNTD line 195 at 2CH 3:14; target 2CH 3:15
+\s Insert Heading
+\r 1இராஜா 7:15-22
+
+GNTD line 196 at 2CH 4:0; target 2CH 4:1
+\r 1இராஜா 7:23-51
+
+GNTD line 197 at 2CH 5:1; target 2CH 5:2
+\r 1இராஜா 8:1-9
+
+GNTD line 198 at 2CH 6:0; target 2CH 6:1
+\s Insert Heading
+\r 1இராஜா 8:12-21
+
+GNTD line 199 at 2CH 6:11; target 2CH 6:12
+\r 1இராஜா 8:22-53
+
+GNTD line 200 at 2CH 7:0; target 2CH 7:1
+\r 1இராஜா 8:62-66
+
+GNTD line 201 at 2CH 7:10; target 2CH 7:11
+\r 1இராஜா 9:1-9
+
+GNTD line 202 at 2CH 8:0; target 2CH 8:1
+\r 1இராஜா 9:10-28
+
+GNTD line 203 at 2CH 9:0; target 2CH 9:1
+\r 1இராஜா 10:1-13
+
+GNTD line 204 at 2CH 9:12; target 2CH 9:13
+\r 1இராஜா 10:14-25
+
+GNTD line 205 at 2CH 9:28; target 2CH 9:29
+\r 1இராஜா 11:41-43
+
+GNTD line 206 at 2CH 10:0; target 2CH 10:1
+\r 1இராஜா 12:1-20
+
+GNTD line 207 at 2CH 11:0; target 2CH 11:1
+\s Insert Heading
+\r 1இராஜா 12:21-24
+
+GNTD line 208 at 2CH 12:0; target 2CH 12:1
+\r 1இராஜா 14:25-28
+
+GNTD line 209 at 2CH 13:0; target 2CH 13:1
+\r 1இராஜா 15:1-8
+
+GNTD line 210 at 2CH 16:0; target 2CH 16:1
+\r 1இராஜா 15:17-22
+
+GNTD line 211 at 2CH 16:10; target 2CH 16:11
+Added \p immediately before target verse
+
+GNTD line 211 at 2CH 16:10; target 2CH 16:11
+\s Insert Heading
+\r 1இராஜா 15:23,24
+
+GNTD line 212 at 2CH 18:0; target 2CH 18:1
+\r 1இராஜா 22:1-28
+
+GNTD line 213 at 2CH 18:27; target 2CH 18:28
+\r 1இராஜா 22:29-35
+
+GNTD line 214 at 2CH 20:30; target 2CH 20:31
+\r 1இராஜா 22:41-50
+
+GNTD line 215 at 2CH 21:1; target 2CH 21:2
+Added \p immediately before target verse
+
+GNTD line 215 at 2CH 21:1; target 2CH 21:2
+\s Insert Heading
+\r 2இராஜா 8:17-24
+
+GNTD line 216 at 2CH 22:0; target 2CH 22:1
+\r 2இராஜா 8:25-29; 2இராஜா 9:21-28
+
+GNTD line 217 at 2CH 22:9; target 2CH 22:10
+\r 2இராஜா 11:1-3
+
+GNTD line 218 at 2CH 23:0; target 2CH 23:1
+\s Insert Heading
+\r 2இராஜா 11:4-16
+
+GNTD line 219 at 2CH 23:15; target 2CH 23:16
+\s Insert Heading
+\r 2இராஜா 11:17-20
+
+GNTD line 220 at 2CH 24:0; target 2CH 24:1
+\r 2இராஜா 12:1-16
+
+GNTD line 221 at 2CH 25:0; target 2CH 25:1
+\r 2இராஜா 14:2-6
+
+GNTD line 222 at 2CH 25:4; target 2CH 25:5
+Added \p immediately before target verse
+
+GNTD line 222 at 2CH 25:4; target 2CH 25:5
+\s Insert Heading
+\r 2இராஜா 14:7
+
+GNTD line 223 at 2CH 25:16; target 2CH 25:17
+\s Insert Heading
+\r 2இராஜா 14:8-20
+
+GNTD line 224 at 2CH 26:0; target 2CH 26:1
+\r 2இராஜா 14:21,22; 2இராஜா 15:1-7
+
+GNTD line 225 at 2CH 27:0; target 2CH 27:1
+\r 2இராஜா 15:32-38
+
+GNTD line 226 at 2CH 28:0; target 2CH 28:1
+\r 2இராஜா 16:1-4
+
+GNTD line 227 at 2CH 28:4; target 2CH 28:5
+Added \p immediately before target verse
+
+GNTD line 227 at 2CH 28:4; target 2CH 28:5
+\s Insert Heading
+\r 2இராஜா 16:5
+
+GNTD line 228 at 2CH 28:15; target 2CH 28:16
+\s Insert Heading
+\r 2இராஜா 16:7-9
+
+GNTD line 229 at 2CH 29:0; target 2CH 29:1
+\r 2இராஜா 18:1-3
+
+GNTD line 230 at 2CH 32:0; target 2CH 32:1
+\r 2இராஜா 18:13-37; 2இராஜா 19:14-19,35-37; ஏசா 36:1-22; ஏசா 37:8-38
+
+GNTD line 231 at 2CH 32:23; target 2CH 32:24
+\r 2இராஜா 20:1-3,12-19; ஏசா 38:1-3; ஏசா 39:1-8
+
+GNTD line 232 at 2CH 32:31; target 2CH 32:32
+Added \p immediately before target verse
+
+GNTD line 232 at 2CH 32:31; target 2CH 32:32
+\s Insert Heading
+\r 2இராஜா 20:20,21
+
+GNTD line 233 at 2CH 33:0; target 2CH 33:1
+\r 2இராஜா 21:1-9
+
+GNTD line 234 at 2CH 33:17; target 2CH 33:18
+Added \p immediately before target verse
+
+GNTD line 234 at 2CH 33:17; target 2CH 33:18
+\s Insert Heading
+\r 2இராஜா 21:17,18
+
+GNTD line 235 at 2CH 33:20; target 2CH 33:21
+\r 2இராஜா 21:19-26
+
+GNTD line 236 at 2CH 34:0; target 2CH 34:1
+\r 2இராஜா 22:1,2
+
+GNTD line 237 at 2CH 34:7; target 2CH 34:8
+\s Insert Heading
+\r 2இராஜா 22:3-20
+
+GNTD line 238 at 2CH 34:28; target 2CH 34:29
+\s Insert Heading
+\r 2இராஜா 23:1-20
+
+GNTD line 239 at 2CH 35:0; target 2CH 35:1
+\r 2இராஜா 23:21-23
+
+GNTD line 240 at 2CH 35:19; target 2CH 35:20
+\r 2இராஜா 23:28-30
+
+GNTD line 241 at 2CH 36:0; target 2CH 36:1
+\r 2இராஜா 23:30-35
+
+GNTD line 242 at 2CH 36:4; target 2CH 36:5
+\r 2இராஜா 23:36—24:7
+
+GNTD line 243 at 2CH 36:8; target 2CH 36:9
+\r 2இராஜா 24:8-17
+
+GNTD line 244 at 2CH 36:10; target 2CH 36:11
+\r 2இராஜா 24:18-20; எரே 52:1-3a
+
+GNTD line 245 at 2CH 36:12; target 2CH 36:13
+Added \p immediately before target verse
+
+GNTD line 245 at 2CH 36:12; target 2CH 36:13
+\s Insert Heading
+\r 2இராஜா 25:1-21; எரே 52:3b-11
+
+GNTD line 246 at 2CH 36:21; target 2CH 36:22
+\s Insert Heading
+\r எஸ்றா 1:1-4
+
+Exact references skipped: 0
+
+15EZRIRVTam.SFM: 1 change(s)
+GNTD line 247 at EZR 2:0; target EZR 2:1
+\r நெகே 7:4-73
+
+Exact references skipped: 0
+
+16NEHIRVTam.SFM: 1 change(s)
+GNTD line 248 at NEH 7:3; target NEH 7:4
+\r எஸ்றா 2:1-70
+
+Exact references skipped: 0
+
+19PSAIRVTam.SFM: 16 change(s)
+GNTD line 249 at PSA 14:0; target PSA 14:1
+Added \p immediately before target verse
+
+GNTD line 249 at PSA 14:0; target PSA 14:1
+\s Insert Heading
+\r சங் 53
+
+GNTD line 250 at PSA 18:0; target PSA 18:1
+Added \p immediately before target verse
+
+GNTD line 250 at PSA 18:0; target PSA 18:1
+\s Insert Heading
+\r 2சாமு 22:1-51
+
+GNTD line 251 at PSA 40:11; target PSA 40:12
+Added \p immediately before target verse
+
+GNTD line 251 at PSA 40:11; target PSA 40:12
+\s Insert Heading
+\r சங் 70
+
+GNTD line 252 at PSA 53:0; target PSA 53:1
+Added \p immediately before target verse
+
+GNTD line 252 at PSA 53:0; target PSA 53:1
+\s Insert Heading
+\r சங் 14
+
+GNTD line 253 at PSA 70:0; target PSA 70:1
+Added \p immediately before target verse
+
+GNTD line 253 at PSA 70:0; target PSA 70:1
+\s Insert Heading
+\r சங் 40:13-17
+
+GNTD line 254 at PSA 96:0; target PSA 96:1
+Added \p immediately before target verse
+
+GNTD line 254 at PSA 96:0; target PSA 96:1
+\s Insert Heading
+\r 1நாளா 16:23-33
+
+GNTD line 255 at PSA 105:0; target PSA 105:1
+Added \p immediately before target verse
+
+GNTD line 255 at PSA 105:0; target PSA 105:1
+\s Insert Heading
+\r 1நாளா 16:8-22
+
+GNTD line 256 at PSA 108:0; target PSA 108:1
+Added \p immediately before target verse
+
+GNTD line 256 at PSA 108:0; target PSA 108:1
+\s Insert Heading
+\r சங் 57:7-11; சங் 60:5-12
+
+Exact references skipped: 0
+
+23ISAIRVTam.SFM: 8 change(s)
+GNTD line 257 at ISA 2:0; target ISA 2:1
+\r மீகா 4:1-3
+
+GNTD line 258 at ISA 36:0; target ISA 36:1
+\r 2இராஜா 18:13-27; 2நாளா 32:1-19
+
+GNTD line 259 at ISA 37:0; target ISA 37:1
+\r 2இராஜா 19:1-7
+
+GNTD line 260 at ISA 37:7; target ISA 37:8
+Added \p immediately before target verse
+
+GNTD line 260 at ISA 37:7; target ISA 37:8
+\s Insert Heading
+\r 2இராஜா 19:8-19
+
+GNTD line 261 at ISA 37:20; target ISA 37:21
+\r 2இராஜா 19:20-37
+
+GNTD line 262 at ISA 38:0; target ISA 38:1
+\r 2இராஜா 20:1-11; 2நாளா 32:24-26
+
+GNTD line 263 at ISA 39:0; target ISA 39:1
+\r 2இராஜா 20:12-19
+
+Exact references skipped: 0
+
+24JERIRVTam.SFM: 8 change(s)
+GNTD line 264 at JER 40:6; target JER 40:7
+\r 2இராஜா 25:22-24
+
+GNTD line 265 at JER 40:12; target JER 40:13
+Added \p immediately before target verse
+
+GNTD line 265 at JER 40:12; target JER 40:13
+\s Insert Heading
+\r 2இராஜா 25:25,26
+
+GNTD line 266 at JER 52:0; target JER 52:1
+\r 2இராஜா 24:18—25:7
+
+GNTD line 267 at JER 52:11; target JER 52:12
+Added \p immediately before target verse
+
+GNTD line 267 at JER 52:11; target JER 52:12
+\s Insert Heading
+\r 2இராஜா 25:8-17
+
+GNTD line 268 at JER 52:23; target JER 52:24
+Added \p immediately before target verse
+
+GNTD line 268 at JER 52:23; target JER 52:24
+\s Insert Heading
+\r 2இராஜா 25:18-21,27-30
+
+Exact references skipped: 0
+
+26EZKIRVTam.SFM: 5 change(s)
+GNTD line 269 at EZK 3:15; target EZK 3:16
+Added \p immediately before target verse
+
+GNTD line 269 at EZK 3:15; target EZK 3:16
+\s Insert Heading
+\r எசேக் 33:1-9
+
+GNTD line 270 at EZK 33:0; target EZK 33:1
+\r எசேக் 3:16-21
+
+GNTD line 271 at EZK 45:17; target EZK 45:18
+Added \p immediately before target verse
+
+GNTD line 271 at EZK 45:17; target EZK 45:18
+\s Insert Heading
+\r யாத் 12:1-20; லேவி 23:33-43
+
+Exact references skipped: 0
+
+33MICIRVTam.SFM: 1 change(s)
+GNTD line 272 at MIC 4:0; target MIC 4:1
+\r ஏசா 2:2-4
+
+Exact references skipped: 0

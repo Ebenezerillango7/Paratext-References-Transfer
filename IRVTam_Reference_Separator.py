@@ -54,14 +54,14 @@ def parse_gntd_references(text):
             errors.append("Line {}: unrecognized GNTD row".format(line_number))
             continue
         location = match.group(3)
-        start_verse = int(location.split("-", 1)[0])
+        end_verse = int(location.split("-")[-1])
+        target_verse = end_verse + 1
         rows.append({
             "line": line_number,
             "book": match.group(1),
             "chapter": int(match.group(2)),
             "source_location": location,
-            # In this GNTD file, chapter:0 means the start of the chapter.
-            "verse": 1 if start_verse == 0 else start_verse,
+            "verse": target_verse,
             "reference": match.group(4).strip(),
         })
     return rows, errors
@@ -72,7 +72,7 @@ def _english_reference_to_tamil(reference, book_data):
     english = sorted(ENGLISH_BOOK_NAMES.items(), key=lambda item: len(item[1]), reverse=True)
     english.append(("PSA", "Psalm"))
     english.append(("SNG", "Song of Songs"))
-    reference = reference.strip().strip("()[] ")
+    reference = re.sub(r"[()[\]]", "", reference).strip()
     parts = []
     current_code = None
     for part in reference.split(";"):
@@ -89,17 +89,22 @@ def _english_reference_to_tamil(reference, book_data):
             passage = value
         else:
             raise ValueError("Unrecognized English book name in reference: " + value)
+        passage = re.sub(r"[()[\]]", "", passage)
         passage = re.sub(r"\s*([.,;])\s*", r"\1", passage)
         passage = re.sub(r"\s*([-–—])\s*", r"\1", passage)
         passage = passage.replace(".", ":")
         parts.append(book_data[current_code][0] + " " + passage)
-    return "; ".join(parts)
+    result = "; ".join(parts)
+    result = re.sub(r"[()[\]]", "", result).strip()
+    result = re.sub(r"[\s.,;:]+$", "", result)
+    return result
 
 
 def canonical_reference(reference, book_data):
     """Canonicalize an English or Tamil \r payload for duplicate comparison."""
     value = re.sub(r"^\\r\s*", "", reference.strip())
-    value = value.strip().strip("()[]").strip().rstrip(".")
+    value = re.sub(r"[()[\]]", "", value).strip()
+    value = re.sub(r"[\s.,;:]+$", "", value)
     aliases = {}
     for code, (abbr, names) in book_data.items():
         for name in [abbr] + names:
@@ -119,8 +124,10 @@ def canonical_reference(reference, book_data):
                 break
         if code is None:
             return None
+        passage = re.sub(r"[()[\]]", "", passage)
         passage = re.sub(r"\s+", "", passage).replace(".", ":")
         passage = passage.replace("–", "-").replace("—", "-")
+        passage = re.sub(r"[\s.,;:]+$", "", passage)
         result.append(code + ":" + passage)
     return ";".join(result)
 
@@ -140,6 +147,18 @@ def import_gntd_references(content, book_code, rows, book_data):
     changes = []
     skipped_exact = 0
     errors = []
+
+    # Clean up any existing \r lines: remove all brackets and trailing punctuation/full stops.
+    for index, line in enumerate(lines):
+        match = re.match(r"^(\\r\s+)(.*?)(\r?\n)?$", line)
+        if match:
+            marker = match.group(1)
+            body = match.group(2)
+            eol = match.group(3) or ""
+            cleaned_body = re.sub(r"[()[\]]", "", body).strip()
+            cleaned_body = re.sub(r"[\s.,;:]+$", "", cleaned_body)
+            if cleaned_body != body:
+                lines[index] = marker + cleaned_body + eol
 
     for row in rows:
         if row["book"] != book_code:
@@ -184,29 +203,51 @@ def import_gntd_references(content, book_code, rows, book_data):
             })
         paragraph_index = verse_index - 1
 
-        # Compare existing references in this local heading/reference block.
+        # Compare existing references in this local heading/reference block and check if \s heading exists.
         scan = paragraph_index - 1
         existing = []
-        while scan >= 0 and (re.match(r"^\\(?:r|s\d*)(?:\s|$)", lines[scan]) or not lines[scan].strip()):
-            if re.match(r"^\\r(?:\s|$)", lines[scan]):
-                existing.append(lines[scan].strip())
+        has_s = False
+        while scan >= 0:
+            line_str = lines[scan].strip()
+            if re.match(r"^\\r(?:\s|$)", line_str):
+                existing.append(line_str)
+            elif re.match(r"^\\s\d*(?:\s|$)", line_str):
+                has_s = True
+                break
+            elif not line_str:
+                pass
+            else:
+                break
             scan -= 1
+
         if any(canonical_reference(item, book_data) == wanted_key for item in existing):
             skipped_exact += 1
             continue
 
         insert_at = paragraph_index
-        heading = "\\s Insert Heading" + newline
-        ref_line = "\\r ({} )".format(ref_payload) + newline
-        ref_line = ref_line.replace(" )", ")")
-        lines[insert_at:insert_at] = [heading, ref_line]
-        changes.append({
+        to_insert = []
+        heading = None
+        if not has_s:
+            heading = "\\s Insert Heading" + newline
+            to_insert.append(heading)
+
+        ref_payload = re.sub(r"[()[\]]", "", ref_payload).strip()
+        ref_payload = re.sub(r"[\s.,;:]+$", "", ref_payload)
+        ref_line = "\\r " + ref_payload + newline
+        to_insert.append(ref_line)
+
+        lines[insert_at:insert_at] = to_insert
+        change_record = {
             "kind": "reference",
-            "gntd_line": row["line"], "location": "{} {}:{}".format(book_code, row["chapter"], row["verse"]),
+            "gntd_line": row["line"],
+            "location": "{} {}:{}".format(book_code, row["chapter"], row["verse"]),
             "gntd_location": "{} {}:{}".format(book_code, row["chapter"], row["source_location"]),
-            "heading": heading.rstrip("\r\n"), "reference": ref_line.rstrip("\r\n"),
+            "reference": ref_line.rstrip("\r\n"),
             "existing_references": list(reversed(existing)),
-        })
+        }
+        if heading:
+            change_record["heading"] = heading.rstrip("\r\n")
+        changes.append(change_record)
 
     return "".join(lines), changes, skipped_exact, errors
 
