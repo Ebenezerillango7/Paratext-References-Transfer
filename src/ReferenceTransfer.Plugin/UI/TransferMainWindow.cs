@@ -353,6 +353,8 @@ namespace ReferenceTransfer.Plugin.UI
                     }
                 }
             }
+
+            _grid.Refresh();
         }
 
         private void LoadInitialData()
