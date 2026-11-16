@@ -1,5 +1,0 @@
-\check Transfer References (Modern Tool)
-\submenu References
-\script TransferReferencesApp.py
-\description Unified modern React tool to transfer parallel passage references from resources (e.g. ESV, GNTD) or projects into target projects. [Version 2.0]
-\utf8
