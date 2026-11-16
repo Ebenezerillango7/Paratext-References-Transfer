@@ -158,96 +158,11 @@ namespace ReferenceTransfer.Plugin
             return entries;
         }
 
-        private static object? FindScrText(string id)
-        {
-            if (string.IsNullOrWhiteSpace(id)) return null;
-            try
-            {
-                var asm = AppDomain.CurrentDomain.GetAssemblies()
-                    .FirstOrDefault(a => string.Equals(a.GetName().Name, "ParatextData", StringComparison.OrdinalIgnoreCase));
-
-                if (asm == null)
-                {
-                    string candidate = @"D:\Transdata\Paratext 9\ParatextData.dll";
-                    if (File.Exists(candidate)) asm = Assembly.LoadFrom(candidate);
-                }
-                if (asm == null) return null;
-
-                var colType = asm.GetType("Paratext.Data.ScrTextCollection");
-                if (colType == null) return null;
-
-                var findMethod = colType.GetMethods(BindingFlags.Public | BindingFlags.Static)
-                    .FirstOrDefault(m => m.Name == "Find" && m.GetParameters().Length == 3);
-                if (findMethod != null)
-                {
-                    var result = findMethod.Invoke(null, new object[] { id, false, true });
-                    if (result != null) return result;
-                }
-
-                var findCase = colType.GetMethods(BindingFlags.Public | BindingFlags.Static)
-                    .FirstOrDefault(m => m.Name == "FindProjectWithDifferentCase" && m.GetParameters().Length >= 1);
-                if (findCase != null)
-                {
-                    object[] args = findCase.GetParameters().Length == 1 ? new object[] { id } : new object[] { id, true };
-                    var result = findCase.Invoke(null, args);
-                    if (result != null) return result;
-                }
-            }
-            catch { }
-            return null;
-        }
-
         public VernacularBookNameManager LoadVernacularManager(string id)
         {
             var mgr = new VernacularBookNameManager();
             if (string.IsNullOrWhiteSpace(id)) return mgr;
 
-            // 1. Try Paratext native live ScrTextCollection via Reflection (zero static dll dependency)
-            try
-            {
-                var scrText = FindScrText(id);
-                if (scrText != null)
-                {
-                    var bookNamesProp = scrText.GetType().GetProperty("BookNames");
-                    var bookNamesObj = bookNamesProp?.GetValue(scrText);
-                    if (bookNamesObj != null)
-                    {
-                        var getBookNamesMethod = bookNamesObj.GetType().GetMethods()
-                            .FirstOrDefault(m => m.Name == "GetBookNames" && m.GetParameters().Length == 0);
-                        if (getBookNamesMethod != null)
-                        {
-                            var list = getBookNamesMethod.Invoke(bookNamesObj, null) as IEnumerable;
-                            if (list != null)
-                            {
-                                foreach (var b in list)
-                                {
-                                    var bType = b.GetType();
-                                    string code = bType.GetProperty("BookCode")?.GetValue(b)?.ToString() ?? "";
-                                    string abbr = bType.GetProperty("Abbreviation")?.GetValue(b)?.ToString() ?? "";
-                                    string shortName = bType.GetProperty("ShortName")?.GetValue(b)?.ToString() ?? "";
-                                    string longName = bType.GetProperty("LongName")?.GetValue(b)?.ToString() ?? "";
-                                    if (!string.IsNullOrEmpty(code))
-                                    {
-                                        mgr.RegisterBook(code, abbr, shortName, longName);
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    if (mgr.IsLoaded)
-                    {
-                        _host.Log(this as IPluginObject, "Loaded BookNames for {0} via live Paratext ({1} books)", new object[] { id, mgr.BookCount });
-                        return mgr;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                _host.Log(this as IPluginObject, "ScrText BookNames reflection for {0}: {1}", new object[] { id, ex.Message });
-            }
-
-            // 2. Fallback to scanning disk XML files
             try
             {
                 string[] baseDirs = {
@@ -280,48 +195,6 @@ namespace ReferenceTransfer.Plugin
             var settings = new ProjectScriptureSettings();
             if (string.IsNullOrWhiteSpace(id)) return settings;
 
-            // 1. Try Paratext native live ScrTextCollection via Reflection (zero static dll dependency)
-            try
-            {
-                var scrText = FindScrText(id);
-                if (scrText != null)
-                {
-                    var settingsProp = scrText.GetType().GetProperty("Settings");
-                    var s = settingsProp?.GetValue(scrText);
-                    if (s != null)
-                    {
-                        var sType = s.GetType();
-                        settings.ChapterVerseSeparator = sType.GetProperty("ChapterVerseSeparator")?.GetValue(s)?.ToString() ?? ":";
-                        settings.RangeIndicator = sType.GetProperty("VerseRangeSeparator")?.GetValue(s)?.ToString() ?? "-";
-                        settings.SequenceIndicator = sType.GetProperty("VerseSequenceSeparator")?.GetValue(s)?.ToString() ?? ",";
-                        settings.BookSequenceSeparator = sType.GetProperty("BookSequenceSeparator")?.GetValue(s)?.ToString() ?? "; ";
-                        settings.ChapterRangeSeparator = sType.GetProperty("ChapterRangeSeparator")?.GetValue(s)?.ToString() ?? "—";
-                        var noSpace = sType.GetProperty("NoSpaceBetweenBookAndChapter")?.GetValue(s);
-                        if (noSpace is bool bNoSpace) settings.NoSpaceBetweenBookAndChapter = bNoSpace;
-
-                        var rSource = sType.GetProperty("RSource")?.GetValue(s);
-                        if (rSource != null)
-                        {
-                            string rStr = rSource.ToString() ?? "";
-                            if (rStr.IndexOf("ShortName", StringComparison.OrdinalIgnoreCase) >= 0)
-                                settings.DefaultMarkerRStyle = BookNameStyle.ShortName;
-                            else if (rStr.IndexOf("LongName", StringComparison.OrdinalIgnoreCase) >= 0)
-                                settings.DefaultMarkerRStyle = BookNameStyle.LongName;
-                            else
-                                settings.DefaultMarkerRStyle = BookNameStyle.Abbreviation;
-                        }
-
-                        settings.IsLoaded = true;
-                        return settings;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                _host.Log(this as IPluginObject, "ScrText Settings reflection for {0}: {1}", new object[] { id, ex.Message });
-            }
-
-            // 2. Fallback to scanning disk XML files
             try
             {
                 string[] baseDirs = {
@@ -578,7 +451,14 @@ namespace ReferenceTransfer.Plugin
                 }
                 catch (Exception ex)
                 {
-                    _host.Log(pluginObj, "Error writing references to chapter {0}: {1}", new object[] { chapterNum, ex.Message });
+                    try
+                    {
+                        if (pluginObj != null)
+                        {
+                            _host.Log(pluginObj, "Error writing references to chapter {0}: {1}", new object[] { chapterNum, ex.Message });
+                        }
+                    }
+                    catch { }
                 }
                 finally
                 {
