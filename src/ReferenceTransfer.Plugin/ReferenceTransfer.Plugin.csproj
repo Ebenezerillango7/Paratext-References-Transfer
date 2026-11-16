@@ -28,10 +28,6 @@
       <HintPath Condition="Exists('$(ParatextInstallDir)\CorePluginInterfaces.dll')">$(ParatextInstallDir)\CorePluginInterfaces.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="ParatextData">
-      <HintPath Condition="Exists('$(ParatextInstallDir)\ParatextData.dll')">$(ParatextInstallDir)\ParatextData.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
   </ItemGroup>
 
   <!-- Create the .ptxplg file directly from the output assembly -->
