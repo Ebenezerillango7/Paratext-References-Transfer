@@ -190,6 +190,7 @@ namespace ReferenceTransfer.Plugin.UI
             _chkCleanPunct.CheckedChanged += (s, e) => UpdateProposedReferencesInGrid();
 
             _chkRemoveExisting = new CheckBox { Text = "Replace existing \\r references", Checked = true, Location = new Point(745, 88), AutoSize = true };
+            _chkRemoveExisting.CheckedChanged += ChkRemoveExisting_CheckedChanged;
 
             // Row 4: Actions
             _btnScan = new Button
@@ -859,7 +860,11 @@ namespace ReferenceTransfer.Plugin.UI
             if (p.HasWarning)
                 return p.Warning;
             if (!string.IsNullOrEmpty(p.ExistingReference))
-                return $"Replaces existing reference '{p.ExistingReference}' in target text.";
+            {
+                return p.WillReplaceExisting
+                    ? $"Replaces existing reference '{p.ExistingReference}' in target text."
+                    : $"Target already has reference '{p.ExistingReference}'. Skipped because 'Replace existing \\r references' is unchecked.";
+            }
             if (p.IsEnglishFallback)
                 return p.NeedsHeading 
                     ? "Target project Scripture Reference Settings is blank for this book (standard English name used). Also inserting '\\s Insert Heading'."
@@ -886,7 +891,7 @@ namespace ReferenceTransfer.Plugin.UI
                 Color textColor;
                 Color borderColor;
 
-                if (statusText.StartsWith("Duplicate"))
+                if (statusText.StartsWith("Duplicate") || statusText.StartsWith("Existing Kept"))
                 {
                     bgColor = Color.FromArgb(241, 245, 249);
                     textColor = Color.FromArgb(100, 116, 139);
@@ -978,18 +983,50 @@ namespace ReferenceTransfer.Plugin.UI
             }
         }
 
+        private void ChkRemoveExisting_CheckedChanged(object? sender, EventArgs e)
+        {
+            bool replaceEnabled = _chkRemoveExisting.Checked;
+
+            foreach (var p in _currentProposals)
+            {
+                if (!p.IsDuplicate && !p.HasWarning && !string.IsNullOrEmpty(p.ExistingReference))
+                {
+                    p.WillReplaceExisting = replaceEnabled;
+                    p.IsAccepted = replaceEnabled;
+                }
+            }
+
+            for (int i = 0; i < _grid.Rows.Count; i++)
+            {
+                if (_grid.Rows[i].Tag is ReferenceTransferProposal p)
+                {
+                    if (!p.IsDuplicate && !p.HasWarning && !string.IsNullOrEmpty(p.ExistingReference))
+                    {
+                        _grid.Rows[i].Cells["ColApply"].Value = p.IsAccepted;
+                        _grid.Rows[i].Cells["ColStatus"].Value = p.Status;
+                        _grid.Rows[i].Cells["ColStatus"].ToolTipText = GetStatusToolTip(p);
+                    }
+                }
+            }
+
+            _grid.Refresh();
+            UpdateStatusCounts();
+        }
+
         private void UpdateStatusCounts()
         {
             int total = _currentProposals.Count;
             int accepted = _currentProposals.Count(p => p.IsAccepted && !p.IsDuplicate && !p.HasWarning);
             int newClean = _currentProposals.Count(p => p.IsAccepted && !p.IsDuplicate && !p.HasWarning && !p.NeedsHeading && string.IsNullOrEmpty(p.ExistingReference));
             int newHeading = _currentProposals.Count(p => p.IsAccepted && !p.IsDuplicate && !p.HasWarning && p.NeedsHeading && string.IsNullOrEmpty(p.ExistingReference));
-            int replaces = _currentProposals.Count(p => !p.IsDuplicate && !p.HasWarning && !string.IsNullOrEmpty(p.ExistingReference));
+            int replaces = _currentProposals.Count(p => p.IsAccepted && !p.IsDuplicate && !p.HasWarning && !string.IsNullOrEmpty(p.ExistingReference));
+            int existingKept = _currentProposals.Count(p => !p.IsDuplicate && !p.HasWarning && !string.IsNullOrEmpty(p.ExistingReference) && !p.WillReplaceExisting);
             int duplicates = _currentProposals.Count(p => p.IsDuplicate);
             int warnings = _currentProposals.Count(p => p.HasWarning);
 
             string headingDetail = newHeading > 0 ? $" ({newClean} clean, {newHeading} with \\s)" : "";
-            _lblStatus.Text = $"Total References: {total} | Ready: {accepted}{headingDetail} | Replaces: {replaces} | Duplicates: {duplicates} | Warnings: {warnings}";
+            string keptDetail = existingKept > 0 ? $" | Existing Kept: {existingKept}" : "";
+            _lblStatus.Text = $"Total References: {total} | Ready: {accepted}{headingDetail} | Replaces: {replaces}{keptDetail} | Duplicates: {duplicates} | Warnings: {warnings}";
         }
 
         private void BtnApply_Click(object? sender, EventArgs e)

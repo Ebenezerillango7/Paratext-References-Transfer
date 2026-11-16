@@ -67,7 +67,13 @@ namespace ReferenceTransfer.Core.Models
         public bool IsEnglishFallback { get; set; }
 
         /// <summary>
-        /// Unified status string for display in the grid (e.g. "New", "New  ➕ \s", "Replaces Existing", "Duplicate (Skipped)")
+        /// Whether this proposal will overwrite an existing reference (governed by Replace existing \r references option).
+        /// If false, the existing reference in the target text is preserved and this proposal is skipped.
+        /// </summary>
+        public bool WillReplaceExisting { get; set; } = true;
+
+        /// <summary>
+        /// Unified status string for display in the grid (e.g. "New", "New  ➕ \s", "Replaces Existing", "Existing Kept (Skipped)", "Duplicate (Skipped)")
         /// </summary>
         public string Status
         {
@@ -75,7 +81,10 @@ namespace ReferenceTransfer.Core.Models
             {
                 if (IsDuplicate) return "Duplicate (Skipped)";
                 if (HasWarning) return Warning;
-                if (!string.IsNullOrEmpty(ExistingReference)) return "Replaces Existing";
+                if (!string.IsNullOrEmpty(ExistingReference))
+                {
+                    return WillReplaceExisting ? "Replaces Existing" : "Existing Kept (Skipped)";
+                }
                 if (IsEnglishFallback) return NeedsHeading ? "English Fallback  ➕ \\s" : "English Fallback";
                 if (NeedsHeading) return "New  ➕ \\s";
                 return "New";

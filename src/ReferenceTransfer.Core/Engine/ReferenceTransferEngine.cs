@@ -308,6 +308,14 @@ namespace ReferenceTransfer.Core.Engine
                                     proposal.IsDuplicate = true;
                                     proposal.IsAccepted = false;
                                 }
+                                else
+                                {
+                                    proposal.WillReplaceExisting = _options.RemoveExistingReferences;
+                                    if (!_options.RemoveExistingReferences)
+                                    {
+                                        proposal.IsAccepted = false;
+                                    }
+                                }
                             }
                             else if (UsfmMarkerCategories.IsHeading(prevMarker))
                             {
