@@ -27,3 +27,15 @@ htmlcov/
 Thumbs.db
 .app_url.txt
 OLD Resource_Presets/
+
+# .NET / Visual Studio build artifacts
+[Bb]in/
+[Oo]bj/
+[Tt]est[Rr]esults/
+*.user
+*.userosscache
+*.sln.docstates
+*.suo
+.vs/
+packages/
+*.ptxplg

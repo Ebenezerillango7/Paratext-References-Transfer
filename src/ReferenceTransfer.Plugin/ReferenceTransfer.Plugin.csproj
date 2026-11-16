@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <AssemblyName>ReferenceTransfer</AssemblyName>
+    <RootNamespace>ReferenceTransfer.Plugin</RootNamespace>
+    <UseWindowsForms>true</UseWindowsForms>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <Version>2.0.0</Version>
+    <Authors>Ebenezer Illango</Authors>
+    <Company>Paratext Translation Tools</Company>
+    <Product>Paratext Parallel Passages Reference Transfer Native Plugin</Product>
+    <Description>Paratext 9.5 Native Plugin to transfer parallel passage references with vernacular book name translation and safe USFM integration.</Description>
+    <ParatextInstallDir Condition="'$(ParatextInstallDir)' == ''">D:\Transdata\Paratext 9</ParatextInstallDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ReferenceTransfer.Core\ReferenceTransfer.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="PluginInterfaces">
+      <HintPath Condition="Exists('$(ParatextInstallDir)\PluginInterfaces.dll')">$(ParatextInstallDir)\PluginInterfaces.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="CorePluginInterfaces">
+      <HintPath Condition="Exists('$(ParatextInstallDir)\CorePluginInterfaces.dll')">$(ParatextInstallDir)\CorePluginInterfaces.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+  <!-- Create the .ptxplg file directly from the output assembly -->
+  <Target Name="CreatePtxplg" AfterTargets="Build">
+    <Copy SourceFiles="$(TargetPath)" DestinationFiles="$(TargetDir)$(TargetName).ptxplg" />
+    <Message Importance="high" Text="Generated Paratext Plugin: $(TargetDir)$(TargetName).ptxplg" />
+  </Target>
+
+</Project>

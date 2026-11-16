@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netstandard2.0;net48</TargetFrameworks>
+    <AssemblyName>ReferenceTransfer.Core</AssemblyName>
+    <RootNamespace>ReferenceTransfer.Core</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <Version>2.0.0</Version>
+    <Authors>Ebenezer Illango</Authors>
+    <Company>Paratext Translation Tools</Company>
+    <Product>Parallel Passages Reference Transfer Core</Product>
+    <Description>Core extraction, parsing, vernacular translation, and USFM transfer engine for Paratext Parallel References.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="ResourceData\*.txt" />
+  </ItemGroup>
+
+</Project>

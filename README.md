@@ -1,40 +1,117 @@
-# IRV Tamil GNTD Parallel Reference Importer
+# Paratext Parallel References Transfer Plugin (v2.0.0)
 
-A standalone Python/Tkinter application that imports the supplied GNTD parallel passage references into IRV Tamil SFM/USFM files for GEN–MAL. It uses only the Python standard library.
+A high-performance, native **Paratext 9.5+ Standalone Plugin** (`ReferenceTransfer.ptxplg`) built with **C# / .NET Framework 4.8** and the official **ParatextData API**. 
 
-## Run on Windows
+It enables translation teams and consultants to seamlessly transfer parallel passage references (`\r`) from any installed Paratext text project, installed DBL resource, or bundled DBL reference catalog directly into target translation projects with automated vernacular book name localization, project-specific punctuation/separator adherence, and strict USFM hierarchy compliance.
 
-1. Install Python 3.7 or later from python.org.
-2. Keep `IRVTam_Reference_Separator.py`, `IRVTamBooknames.xml`, and `GNTD References.txt` together in one folder.
-3. Open PowerShell in that folder and run:
+---
 
-   ```powershell
-   python IRVTam_Reference_Separator.py
-   ```
+## 🌟 Key Features
 
-4. Confirm the Book names XML and GNTD reference file paths. Choose the folder containing your SFM/USFM files.
-5. Select books, click **Preview GNTD import**, inspect or export the report, then tick **Apply changes** and click **Import / Apply** to write changes.
-6. Backups are enabled by default and are created beside modified files. The app identifies each book from its `\\id` marker.
+1. **Paratext 9.5 Native Integration**:
+   - Compiles to a self-contained `.ptxplg` plugin bundle.
+   - Runs directly inside Paratext under the **Tools / Plugins** menu (`Parallel Passage References Transfer`).
+   - Deep integration with `Paratext.Data.Project` and `ParatextData.dll` transaction management.
 
-## Import behavior
+2. **Strict USFM Hierarchy Enforcement**:
+   - `\r` (Parallel Reference) is strictly placed **above** paragraph/block markers (`\p`, `\m`, `\q`, `\li`, `\nb`, `\b`) and **below** section headings (`\s`, `\ms`).
+   - Automatically detects existing section headings and attaches references directly beneath them without inserting duplicate `\s Insert Heading` markers.
+   - Modifies verses in reverse sequential order to guarantee token offset stability.
 
-- Reads GNTD rows such as `GEN 11:9: \\r (1 Chronicles 1.24-27)` and anchors each insertion point to the following verse (`location + 1`, e.g. `GEN 11:9` inserts at verse 10; chapter start `:0` inserts at verse 1).
-- Inserts a `\\s Insert Heading` line only if an `\\s` heading is not already available for that section.
-- Ensures a `\\p` marker directly precedes the target verse. Adds it when missing.
-- Removes all opening and closing brackets from `\\r` references and removes any trailing full stop or punctuation.
-- Converts English source book names to the exact `abbr` attribute from `IRVTamBooknames.xml`; chapter/verse separators are written with colons.
-- Leaves an exact existing reference alone. If the existing reference differs, preserves it and adds the GNTD reference below it.
-- Does not modify unselected books. Preview never writes to source files. Applying changes makes timestamped backups by default.
-- Retains UTF-8 BOM state and original newline style when writing.
+3. **Dynamic Scripture Reference Settings Adherence**:
+   - Automatically reads the target project's `Settings.xml` (`<ChapterVerseSeparator>`, `<RangeIndicator>`, `<SequenceIndicator>`, `<BookSequenceSeparator>`, etc.).
+   - Dynamically adapts references to project standards (e.g. `.` vs `:` for chapter/verse separators), avoiding Paratext Scripture Reference check errors.
 
-The supplied XML uses `<book code="..." abbr="..." short="..." long="..." />`; `abbr` is the output TOC3 abbreviation. The app’s English-name map is used only to interpret GNTD’s English source names.
+4. **Vernacular Book Name Localization**:
+   - Automatically parses the target project's `BookNames.xml` (supports up to 123 biblical and deuterocanonical books).
+   - Allows users to choose between **Abbreviation** (TOC3), **Short Name** (TOC2), or **Long Name** (TOC1) on the fly with live preview.
 
-## Tests and supplied data
+5. **Resource Catalog & Installed Paratext Projects**:
+   - Dynamically discovers all installed Paratext projects and standard DBL resources (e.g., `ESVUS16`, `GNTD`, `IRVHIN`, `TAOVBSI`).
+   - Also supports custom tab-delimited or SFM-formatted reference text files.
 
-Run the regression suite from the project folder:
+6. **Native Atomic History / Rollback**:
+   - Executes all modifications within Paratext's native project write lock.
+   - Paratext automatically records a single, clean atomic History Point across all modified books (no per-book history clutter).
 
+7. **Global English UI**:
+   - Fully internationalized, intuitive Windows Forms interface suitable for translation teams worldwide.
+   - Provides full pre-transfer inspection grid with verse-by-verse selection and diff preview.
+
+---
+
+## 🚀 Quick Start / Installation
+
+### Automated Installation
+To install into your local Paratext 9.5 installation:
+1. Ensure Paratext is closed.
+2. Run `scripts/install-plugin.bat` (or `scripts/install-plugin.ps1` from PowerShell).
+3. Start Paratext 9.5. The plugin appears under **Tools > Parallel Passage References Transfer**.
+
+### Automated Uninstallation
+To remove the plugin:
+1. Ensure Paratext is closed.
+2. Run `scripts/uninstall-plugin.bat` (or click **Uninstall Plugin...** in the plugin window header).
+
+---
+
+## 🛠️ Building from Source
+
+### Prerequisites
+- Windows 10/11
+- .NET Framework 4.8 Developer Pack
+- MSBuild (Visual Studio 2019/2022 or Build Tools)
+- Paratext 9.5 installed in `C:\Program Files\Paratext 9`
+
+### Build & Package
+Open PowerShell and run:
 ```powershell
-python -m unittest -v test_gntd_import.py
+# Restore & build Release configuration
+msbuild ReferenceTransfer.sln /p:Configuration=Release /t:Rebuild
+
+# Package distributable .ptxplg release
+.\scripts\package-release.ps1
+```
+The output plugin package will be generated at `dist/ReferenceTransfer/ReferenceTransfer.ptxplg` and packaged into `dist/ReferenceTransfer-Paratext9-Plugin-v2.0.0.zip`.
+
+---
+
+## 🧪 Testing
+
+Run the automated NUnit test suite verifying reference parsing, vernacular translation, and USFM token placement:
+```powershell
+dotnet test tests/ReferenceTransfer.Tests/ReferenceTransfer.Tests.csproj
 ```
 
-`Pre-Requisites` contains the original GNTD file and all 39 original sample SFM files. `GNTD Import Preview.txt` lists each proposed insertion and exact match. `Imported SFM` contains processed copies of the 39 samples; the original samples remain unchanged. Tests and preview do not modify the supplied SFM files.
+---
+
+## 📁 Repository Structure
+
+```
+├── ReferenceTransfer.sln            # Visual Studio Solution (.NET 4.8)
+├── NuGet.Config                     # NuGet configuration
+├── docs/
+│   └── ARCHITECTURE.md              # Technical architecture & USFM specification
+├── scripts/
+│   ├── install-plugin.bat           # One-click Windows installer
+│   ├── install-plugin.ps1           # PowerShell installer script
+│   ├── uninstall-plugin.bat         # One-click Windows uninstaller
+│   ├── uninstall-plugin.ps1         # PowerShell uninstaller script
+│   └── package-release.ps1          # Distributable packaging script
+├── src/
+│   ├── ReferenceTransfer.Core/      # Platform-agnostic transfer & USFM engine
+│   │   ├── Engine/                  # Parser, Catalog, USFM Token Placement, Vernacular Map
+│   │   ├── Models/                  # Data structures & ProjectScriptureSettings
+│   │   └── ResourceData/            # Embedded DBL parallel reference catalogs
+│   └── ReferenceTransfer.Plugin/    # Paratext 9.5 Standalone Plugin
+│       ├── ParatextScriptureService # ParatextData API integration
+│       ├── ReferenceTransferPlugin  # IParatextStandalonePlugin implementation
+│       └── UI/                      # Global WinForms UI with live Preview DataGridView
+└── tests/
+    └── ReferenceTransfer.Tests/     # Unit & integration test suite
+```
+
+---
+
+## 📄 License
+This project is licensed under the MIT License - see the LICENSE file for details.
