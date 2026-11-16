@@ -609,40 +609,47 @@ namespace ReferenceTransfer.Plugin
             string bookCode = GetBookCode(bookNum);
             var engine = new ReferenceTransferEngine(vernacularMgr, options, sourceVernacularMgr);
 
-            int lastChapter = project.Versification.GetLastChapter(bookNum);
-            var sbUsfm = new StringBuilder();
+            // Primary: Fetch the full authentic USFM text directly from project/ScrText (contains all \s, \r, \ms, \p)
+            string? fullUsfm = GetUsfmTextForBook(project, bookNum);
 
-            for (int chapter = 1; chapter <= lastChapter; chapter++)
+            if (string.IsNullOrEmpty(fullUsfm))
             {
-                progressCallback?.Invoke(chapter, lastChapter);
+                int lastChapter = project.Versification.GetLastChapter(bookNum);
+                var sbUsfm = new StringBuilder();
 
-                IEnumerable<IUSFMToken> tokenEnum;
-                try
+                for (int chapter = 1; chapter <= lastChapter; chapter++)
                 {
-                    tokenEnum = project.GetUSFMTokens(bookNum, chapter);
-                }
-                catch
-                {
-                    continue;
-                }
+                    progressCallback?.Invoke(chapter, lastChapter);
 
-                if (tokenEnum == null) continue;
-
-                sbUsfm.AppendLine($"\\c {chapter}");
-                foreach (var token in tokenEnum)
-                {
-                    if (token is IUSFMMarkerToken markerToken)
+                    IEnumerable<IUSFMToken> tokenEnum;
+                    try
                     {
-                        sbUsfm.AppendLine($"\\{markerToken.Marker} {markerToken.Data}");
+                        tokenEnum = project.GetUSFMTokens(bookNum, chapter);
                     }
-                    else if (token is IUSFMTextToken textToken)
+                    catch
                     {
-                        sbUsfm.AppendLine(textToken.Text);
+                        continue;
+                    }
+
+                    if (tokenEnum == null) continue;
+
+                    sbUsfm.AppendLine($"\\c {chapter}");
+                    foreach (var token in tokenEnum)
+                    {
+                        if (token is IUSFMMarkerToken markerToken)
+                        {
+                            sbUsfm.AppendLine($"\\{markerToken.Marker} {markerToken.Data}");
+                        }
+                        else if (token is IUSFMTextToken textToken)
+                        {
+                            sbUsfm.AppendLine(textToken.Text);
+                        }
                     }
                 }
+
+                fullUsfm = sbUsfm.ToString();
             }
 
-            string fullUsfm = sbUsfm.ToString();
             return engine.GenerateProposals(bookCode, fullUsfm, sourceReferences);
         }
 

@@ -283,8 +283,9 @@ namespace ReferenceTransfer.Core.Engine
 
                 if (currentChapter == chapter)
                 {
-                    var vMatch = Regex.Match(line, @"^\\v\s+(\d+)");
-                    if (vMatch.Success && int.Parse(vMatch.Groups[1].Value) == verse)
+                    var vMatch = Regex.Match(line, @"^\s*\\v\s+(\d+)");
+                    int matchedVerse = vMatch.Success ? int.Parse(vMatch.Groups[1].Value) : -1;
+                    if (matchedVerse == verse || (verse == 0 && matchedVerse == 1))
                     {
                         // Scan preceding lines across paragraph and block markers for heading (\s) and reference (\r)
                         for (int k = i - 1; k >= 0; k--)
@@ -296,7 +297,12 @@ namespace ReferenceTransfer.Core.Engine
                             {
                                 proposal.ExistingReference = prev.Substring(2).Trim();
                                 string existingCanon = _vernacularMgr.ToCanonicalCitation(proposal.ExistingReference);
-                                if (string.Equals(proposal.ExistingReference, proposal.ProposedReference, StringComparison.OrdinalIgnoreCase) ||
+
+                                // Normalize dashes and parentheses for robust duplicate comparison
+                                string cleanExisting = Regex.Replace(proposal.ExistingReference.Trim('(', ')', '[', ']', ' '), @"[\u2013\u2014]", "-").Trim();
+                                string cleanProposed = Regex.Replace(proposal.ProposedReference.Trim('(', ')', '[', ']', ' '), @"[\u2013\u2014]", "-").Trim();
+
+                                if (string.Equals(cleanExisting, cleanProposed, StringComparison.OrdinalIgnoreCase) ||
                                     (!string.IsNullOrEmpty(existingCanon) && string.Equals(existingCanon, proposal.CanonicalReference, StringComparison.OrdinalIgnoreCase)))
                                 {
                                     proposal.IsDuplicate = true;
