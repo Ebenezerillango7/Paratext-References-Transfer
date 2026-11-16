@@ -57,6 +57,7 @@ namespace ReferenceTransfer.Core.Engine
                     Chapter = r.Chapter,
                     Verse = r.TargetVerse,
                     SourceReference = r.RawReference,
+                    CanonicalReference = _vernacularMgr.ToCanonicalCitation(r.RawReference, _sourceVernacularMgr),
                     ProposedReference = _vernacularMgr.TranslateCitation(
                         r.RawReference, 
                         _options.UseParentheses, 

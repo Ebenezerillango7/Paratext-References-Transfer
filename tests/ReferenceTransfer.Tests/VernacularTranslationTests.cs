@@ -156,5 +156,33 @@ namespace ReferenceTransfer.Tests
 
             Assert.Equal("(1 நாளாகமம் 1:1-4)", longResult);
         }
+
+        [Fact]
+        public void ToCanonicalCitation_ConvertsEnglishAndVernacularToStandardBibleCodes()
+        {
+            var targetMgr = new VernacularBookNameManager();
+            targetMgr.RegisterBook("1CH", "1நாளா", "1 நாளாகமம்", "1 நாளாகமம்");
+
+            var sourceMgr = new VernacularBookNameManager();
+            sourceMgr.RegisterBook("1CH", "1 इति", "1 इतिहास", "इतिहास नामक पुस्तक - पहला भाग");
+            sourceMgr.RegisterBook("EXO", "निर्ग", "निर्गमन", "निर्गमन");
+            sourceMgr.RegisterBook("DEU", "व्य", "व्यवस्थाविवरण", "व्यवस्थाविवरण");
+
+            // English citation -> Canonical code
+            string canon1 = targetMgr.ToCanonicalCitation("(1 Chronicles 1.1-4)", sourceMgr);
+            Assert.Equal("1CH 1:1-4", canon1);
+
+            // Hindi vernacular citation -> Canonical code
+            string canon2 = targetMgr.ToCanonicalCitation("(1 इतिहास 1:1-4)", sourceMgr);
+            Assert.Equal("1CH 1:1-4", canon2);
+
+            // Multi-reference Hindi citation -> Canonical codes
+            string canon3 = targetMgr.ToCanonicalCitation("(निर्गमन 34.18-26; व्यवस्थाविवरण 16.1-17)", sourceMgr);
+            Assert.Equal("EXO 34:18-26; DEU 16:1-17", canon3);
+
+            // Tamil vernacular citation -> Canonical code
+            string canon4 = targetMgr.ToCanonicalCitation("(1 நாளாகமம் 1:1-4)", sourceMgr);
+            Assert.Equal("1CH 1:1-4", canon4);
+        }
     }
 }

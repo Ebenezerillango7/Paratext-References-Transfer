@@ -230,6 +230,71 @@ namespace ReferenceTransfer.Core.Engine
             return s;
         }
 
+        /// <summary>
+        /// Converts any citation (English, Source Vernacular, or Target Vernacular)
+        /// into standardized canonical 3-letter Bible book codes.
+        /// e.g. "(1 Chronicles 1.1-4)" -> "1CH 1:1-4"
+        /// e.g. "(1 इतिहास 1:1-4)" -> "1CH 1:1-4"
+        /// e.g. "(1 நாளாகமம் 1:1-4)" -> "1CH 1:1-4"
+        /// </summary>
+        public string ToCanonicalCitation(string rawRef, VernacularBookNameManager? sourceMgr = null)
+        {
+            if (string.IsNullOrWhiteSpace(rawRef)) return string.Empty;
+
+            string s = rawRef.Trim();
+            if ((s.StartsWith("(") && s.EndsWith(")")) || (s.StartsWith("[") && s.EndsWith("]")))
+            {
+                s = s.Substring(1, s.Length - 2).Trim();
+            }
+            s = Regex.Replace(s, @"^\\r\s*", string.Empty);
+            s = s.TrimEnd('.', ':', ';', ',');
+
+            // Standardize chapter/verse separators to : and ranges to -
+            s = Regex.Replace(s, @"(?<=\b\d+)[:.](?=\d+\b)", ":");
+            s = Regex.Replace(s, @"(?<=\b\d+)\s*[-–—]\s*(?=\d+\b)", "-");
+
+            // 1. Match source vernacular names to canonical codes (if source manager provided)
+            if (sourceMgr != null && sourceMgr.IsLoaded)
+            {
+                foreach (var code in sourceMgr.GetAllBookCodes())
+                {
+                    var sourceNames = sourceMgr.GetAllNamesForCode(code);
+                    foreach (var sName in sourceNames)
+                    {
+                        if (string.IsNullOrWhiteSpace(sName)) continue;
+                        string pattern = $@"(?<!\p{{L}}){Regex.Escape(sName)}(?!\p{{L}})";
+                        s = Regex.Replace(s, pattern, code, RegexOptions.IgnoreCase);
+                    }
+                }
+            }
+
+            // 2. Match English aliases to canonical codes
+            foreach (var kvp in _englishNameToCode)
+            {
+                string engName = kvp.Key;
+                string bookCode = kvp.Value;
+                string pattern = $@"\b{Regex.Escape(engName)}\b";
+                s = Regex.Replace(s, pattern, bookCode, RegexOptions.IgnoreCase);
+            }
+
+            // 3. Match this manager's own vernacular names to canonical codes
+            if (IsLoaded)
+            {
+                foreach (var code in GetAllBookCodes())
+                {
+                    var names = GetAllNamesForCode(code);
+                    foreach (var n in names)
+                    {
+                        if (string.IsNullOrWhiteSpace(n)) continue;
+                        string pattern = $@"(?<!\p{{L}}){Regex.Escape(n)}(?!\p{{L}})";
+                        s = Regex.Replace(s, pattern, code, RegexOptions.IgnoreCase);
+                    }
+                }
+            }
+
+            return s.Trim();
+        }
+
         private void InitializeEnglishBookAliases()
         {
             var aliases = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)

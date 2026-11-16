@@ -20,6 +20,11 @@ namespace ReferenceTransfer.Core.Models
         public string SourceReference { get; set; } = string.Empty;
 
         /// <summary>
+        /// The canonical 3-letter Bible book code reference (e.g. "1CH 1:1-4")
+        /// </summary>
+        public string CanonicalReference { get; set; } = string.Empty;
+
+        /// <summary>
         /// The vernacular-translated reference ready to insert (e.g. Tamil "(1நாளா 1:1-4)")
         /// </summary>
         public string ProposedReference { get; set; } = string.Empty;

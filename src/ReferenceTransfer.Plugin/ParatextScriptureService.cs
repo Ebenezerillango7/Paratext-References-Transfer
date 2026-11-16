@@ -20,16 +20,26 @@ namespace ReferenceTransfer.Plugin
             _host = host ?? throw new ArgumentNullException(nameof(host));
         }
 
-        public List<IProject> GetAllProjects()
+        public List<IProject> GetAllProjects() => GetAllProjects(false);
+
+        public List<IProject> GetAllProjects(bool includeResources)
         {
             try
             {
-                var projects = _host.GetAllProjects();
+                var projects = _host.GetAllProjects(includeResources);
                 return projects != null ? projects.ToList() : new List<IProject>();
             }
             catch
             {
-                return new List<IProject>();
+                try
+                {
+                    var fallback = _host.GetAllProjects();
+                    return fallback != null ? fallback.ToList() : new List<IProject>();
+                }
+                catch
+                {
+                    return new List<IProject>();
+                }
             }
         }
 

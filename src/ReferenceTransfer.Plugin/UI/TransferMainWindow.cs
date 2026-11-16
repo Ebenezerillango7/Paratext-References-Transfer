@@ -50,6 +50,16 @@ namespace ReferenceTransfer.Plugin.UI
         private ProjectScriptureSettings _sourceScriptureSettings = new ProjectScriptureSettings();
         private List<ParallelReferenceEntry> _loadedSourceReferences = new List<ParallelReferenceEntry>();
 
+        // Modal Spinner Overlay for RegEx Pal Extraction
+        private Panel _spinnerOverlay = null!;
+        private Label _lblSpinnerTitle = null!;
+        private Label _lblSpinnerSubtitle = null!;
+        private ProgressBar _spinnerBar = null!;
+        private Label _lblSpinnerStep1 = null!;
+        private Label _lblSpinnerStep2 = null!;
+        private Label _lblSpinnerStep3 = null!;
+        private Label _lblSpinnerStep4 = null!;
+
         public TransferMainWindow(IPluginHost host, IParatextChildState? childState, IPluginObject pluginObj)
         {
             _host = host ?? throw new ArgumentNullException(nameof(host));
@@ -271,7 +281,64 @@ namespace ReferenceTransfer.Plugin.UI
             statusPanel.Controls.Add(_lblStatus);
             statusPanel.Controls.Add(_progressBar);
 
-            // Add panels in order
+            // 5. Centered RegEx Pal Spinner Modal Overlay
+            _spinnerOverlay = new Panel
+            {
+                Size = new Size(500, 270),
+                BackColor = Color.White,
+                BorderStyle = BorderStyle.FixedSingle,
+                Visible = false
+            };
+
+            _lblSpinnerTitle = new Label
+            {
+                Text = "⚡ RegEx Pal Reference Extraction",
+                Font = new Font("Segoe UI", 12f, FontStyle.Bold),
+                ForeColor = Color.FromArgb(20, 30, 50),
+                Location = new Point(22, 16),
+                AutoSize = true
+            };
+            _lblSpinnerSubtitle = new Label
+            {
+                Text = "Extracting parallel passage references from resource...",
+                Font = new Font("Segoe UI", 9f),
+                ForeColor = Color.FromArgb(100, 115, 130),
+                Location = new Point(24, 42),
+                AutoSize = true
+            };
+            _spinnerBar = new ProgressBar
+            {
+                Location = new Point(24, 68),
+                Size = new Size(450, 18),
+                Style = ProgressBarStyle.Marquee,
+                MarqueeAnimationSpeed = 30
+            };
+            _lblSpinnerStep1 = new Label { Text = "● 1. Connecting to Paratext resource engine", Location = new Point(26, 102), AutoSize = true, ForeColor = Color.FromArgb(70, 80, 95) };
+            _lblSpinnerStep2 = new Label { Text = "● 2. Running RegEx Pal extraction (\\r references)", Location = new Point(26, 130), AutoSize = true, ForeColor = Color.FromArgb(70, 80, 95) };
+            _lblSpinnerStep3 = new Label { Text = "● 3. Indexing Canonical 3-letter Bible book codes", Location = new Point(26, 158), AutoSize = true, ForeColor = Color.FromArgb(70, 80, 95) };
+            _lblSpinnerStep4 = new Label { Text = "● 4. Translating Source Vernacular → Target Vernacular", Location = new Point(26, 186), AutoSize = true, ForeColor = Color.FromArgb(70, 80, 95) };
+
+            _spinnerOverlay.Controls.Add(_lblSpinnerTitle);
+            _spinnerOverlay.Controls.Add(_lblSpinnerSubtitle);
+            _spinnerOverlay.Controls.Add(_spinnerBar);
+            _spinnerOverlay.Controls.Add(_lblSpinnerStep1);
+            _spinnerOverlay.Controls.Add(_lblSpinnerStep2);
+            _spinnerOverlay.Controls.Add(_lblSpinnerStep3);
+            _spinnerOverlay.Controls.Add(_lblSpinnerStep4);
+
+            void CenterSpinner()
+            {
+                if (_spinnerOverlay != null)
+                {
+                    _spinnerOverlay.Location = new Point(
+                        Math.Max(10, (ClientSize.Width - _spinnerOverlay.Width) / 2),
+                        Math.Max(10, (ClientSize.Height - _spinnerOverlay.Height) / 2));
+                }
+            }
+            Resize += (s, e) => CenterSpinner();
+
+            // Add panels in order (spinner overlay on top)
+            Controls.Add(_spinnerOverlay);
             Controls.Add(_grid);
             Controls.Add(controlsPanel);
             Controls.Add(statusPanel);
@@ -286,16 +353,17 @@ namespace ReferenceTransfer.Plugin.UI
             {
                 Name = "ColApply",
                 HeaderText = "Apply",
-                Width = 70
+                Width = 65
             };
             _grid.Columns.Add(chkCol);
 
-            _grid.Columns.Add(new DataGridViewTextBoxColumn { Name = "ColVerse", HeaderText = "Verse", Width = 110, ReadOnly = true });
+            _grid.Columns.Add(new DataGridViewTextBoxColumn { Name = "ColVerse", HeaderText = "Target Verse", Width = 105, ReadOnly = true });
+            _grid.Columns.Add(new DataGridViewTextBoxColumn { Name = "ColCanonical", HeaderText = "Canonical Ref", Width = 125, ReadOnly = true });
+            _grid.Columns.Add(new DataGridViewTextBoxColumn { Name = "ColSource", HeaderText = "Source (Original)", Width = 230, ReadOnly = true });
+            _grid.Columns.Add(new DataGridViewTextBoxColumn { Name = "ColProposed", HeaderText = "Proposed (Target)", Width = 260, ReadOnly = true });
             _grid.Columns.Add(new DataGridViewTextBoxColumn { Name = "ColType", HeaderText = "Action", Width = 150, ReadOnly = true });
-            _grid.Columns.Add(new DataGridViewTextBoxColumn { Name = "ColProposed", HeaderText = "Proposed Reference", Width = 280, ReadOnly = true });
-            _grid.Columns.Add(new DataGridViewTextBoxColumn { Name = "ColSource", HeaderText = "Source", Width = 240, ReadOnly = true });
-            _grid.Columns.Add(new DataGridViewTextBoxColumn { Name = "ColHeading", HeaderText = "Section Heading", Width = 220, ReadOnly = true });
-            _grid.Columns.Add(new DataGridViewTextBoxColumn { Name = "ColWarning", HeaderText = "Notes / Warning", Width = 220, ReadOnly = true });
+            _grid.Columns.Add(new DataGridViewTextBoxColumn { Name = "ColHeading", HeaderText = "Section Heading", Width = 200, ReadOnly = true });
+            _grid.Columns.Add(new DataGridViewTextBoxColumn { Name = "ColWarning", HeaderText = "Notes / Warning", Width = 180, ReadOnly = true });
         }
 
         private BookNameStyle GetSelectedNameStyle()
@@ -328,6 +396,7 @@ namespace ReferenceTransfer.Plugin.UI
             for (int i = 0; i < _currentProposals.Count; i++)
             {
                 var p = _currentProposals[i];
+                p.CanonicalReference = _vernacularMgr.ToCanonicalCitation(p.SourceReference, _sourceVernacularMgr);
                 p.ProposedReference = _vernacularMgr.TranslateCitation(
                     p.SourceReference, 
                     useParens, 
@@ -338,6 +407,7 @@ namespace ReferenceTransfer.Plugin.UI
 
                 if (i < _grid.Rows.Count)
                 {
+                    _grid.Rows[i].Cells["ColCanonical"].Value = p.CanonicalReference;
                     _grid.Rows[i].Cells["ColProposed"].Value = p.ProposedReference;
 
                     // Also refresh source display
@@ -542,6 +612,53 @@ namespace ReferenceTransfer.Plugin.UI
             UpdateStatusCounts();
         }
 
+        private void ShowSpinner(string title, string subtitle)
+        {
+            _lblSpinnerTitle.Text = title;
+            _lblSpinnerSubtitle.Text = subtitle;
+            _lblSpinnerStep1.ForeColor = Color.FromArgb(30, 130, 60);
+            _lblSpinnerStep1.Text = "✓ 1. Connected to Paratext engine & resources";
+            _lblSpinnerStep2.ForeColor = Color.FromArgb(37, 99, 235);
+            _lblSpinnerStep2.Text = "● 2. Running RegEx Pal extraction (\\r references)...";
+            _lblSpinnerStep3.ForeColor = Color.FromArgb(140, 150, 165);
+            _lblSpinnerStep3.Text = "○ 3. Indexing Canonical 3-letter Bible book codes";
+            _lblSpinnerStep4.ForeColor = Color.FromArgb(140, 150, 165);
+            _lblSpinnerStep4.Text = "○ 4. Translating Source Vernacular → Target Vernacular";
+            _spinnerOverlay.Location = new Point(
+                Math.Max(10, (ClientSize.Width - _spinnerOverlay.Width) / 2),
+                Math.Max(10, (ClientSize.Height - _spinnerOverlay.Height) / 2));
+            _spinnerOverlay.BringToFront();
+            _spinnerOverlay.Visible = true;
+            Application.DoEvents();
+        }
+
+        private void SetSpinnerStep(int step, string text, bool isDone = false)
+        {
+            Color color = isDone ? Color.FromArgb(30, 130, 60) : Color.FromArgb(37, 99, 235);
+            string prefix = isDone ? "✓ " : "● ";
+            if (step == 2)
+            {
+                _lblSpinnerStep2.ForeColor = color;
+                _lblSpinnerStep2.Text = prefix + text;
+            }
+            else if (step == 3)
+            {
+                _lblSpinnerStep3.ForeColor = color;
+                _lblSpinnerStep3.Text = prefix + text;
+            }
+            else if (step == 4)
+            {
+                _lblSpinnerStep4.ForeColor = color;
+                _lblSpinnerStep4.Text = prefix + text;
+            }
+            Application.DoEvents();
+        }
+
+        private void HideSpinner()
+        {
+            _spinnerOverlay.Visible = false;
+        }
+
         private void BtnScan_Click(object? sender, EventArgs e)
         {
             string projName = _cboTargetProject.SelectedItem?.ToString() ?? string.Empty;
@@ -557,62 +674,99 @@ namespace ReferenceTransfer.Plugin.UI
             string? singleBook = _cboSingleBook.SelectedItem?.ToString();
             var targetBookCodes = CanonicalBookLists.GetBooksForScope(scopeType, singleBook);
 
-            // Handle Project source extraction
-            if (_cboSourceType.SelectedIndex == 1) // Paratext Project
+            string srcLabel = _cboSourceVal.SelectedItem?.ToString() ?? "Source";
+            ShowSpinner("⚡ RegEx Pal Reference Extraction", $"Extracting parallel references for target project '{projName}'...");
+
+            try
             {
-                string srcName = _cboSourceVal.SelectedItem?.ToString() ?? string.Empty;
-                var srcProj = _service.GetAllProjects().FirstOrDefault(p => p.ShortName == srcName);
-                if (srcProj != null)
+                // Step 2: Handle source extraction (Resource, Project, or Preset)
+                SetSpinnerStep(2, $"Running RegEx Pal extraction on {srcLabel}...");
+
+                if (_cboSourceType.SelectedIndex == 1) // Paratext Project
                 {
-                    _lblStatus.Text = $"Extracting parallel references from project '{srcName}'...";
-                    Application.DoEvents();
-                    _loadedSourceReferences = _service.ExtractReferencesFromProject(srcProj, targetBookCodes);
-                    _lblStatus.Text = $"Extracted {_loadedSourceReferences.Count} parallel references from '{srcName}'.";
+                    string srcName = _cboSourceVal.SelectedItem?.ToString() ?? string.Empty;
+                    var srcProj = _service.GetAllProjects().FirstOrDefault(p => p.ShortName == srcName);
+                    if (srcProj != null)
+                    {
+                        _loadedSourceReferences = _service.ExtractReferencesFromProject(srcProj, targetBookCodes);
+                    }
                 }
+                else if (_cboSourceType.SelectedIndex == 0 && _cboSourceVal.SelectedItem is ResourceItemInfo res)
+                {
+                    // Check if resource can be extracted live via Paratext IProject
+                    var allProjs = _service.GetAllProjects(includeResources: true);
+                    var resProj = allProjs.FirstOrDefault(p => string.Equals(p.ShortName, res.Id, StringComparison.OrdinalIgnoreCase));
+                    if (resProj != null)
+                    {
+                        _loadedSourceReferences = _service.ExtractReferencesFromProject(resProj, targetBookCodes);
+                    }
+
+                    if (_loadedSourceReferences.Count == 0 && res.HasReferences)
+                    {
+                        _loadedSourceReferences = ResourceCatalog.LoadResource(res.Id);
+                    }
+                }
+                else if (_loadedSourceReferences.Count == 0)
+                {
+                    LoadSelectedSource();
+                }
+
+                SetSpinnerStep(2, $"Extracted {_loadedSourceReferences.Count} parallel references from source", isDone: true);
+
+                if (_loadedSourceReferences.Count == 0)
+                {
+                    HideSpinner();
+                    MessageBox.Show("No source references available to transfer. Please select an installed Paratext Resource with available references, a source project, or load a reference file.", "No References Available", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                var options = new TransferOptions
+                {
+                    NameStyle = GetSelectedNameStyle(),
+                    ScriptureSettings = _scriptureSettings,
+                    UseParentheses = _chkParentheses.Checked,
+                    InsertHeadingIfMissing = _chkHeading.Checked,
+                    CleanTrailingPunctuation = _chkCleanPunct.Checked,
+                    RemoveExistingReferences = _chkRemoveExisting.Checked
+                };
+
+                // Step 3: Indexing Canonical 3-letter Bible book codes
+                SetSpinnerStep(3, "Indexing Canonical 3-letter Bible codes (GEN, 1CH, etc.)...");
+
+                _progressBar.Visible = true;
+                _progressBar.Value = 0;
+                _currentProposals.Clear();
+
+                int total = targetBookCodes.Count;
+                int done = 0;
+
+                foreach (string code in targetBookCodes)
+                {
+                    done++;
+                    _progressBar.Value = (int)((done / (double)total) * 100);
+                    _lblStatus.Text = $"Scanning {code} ({done} of {total})...";
+                    Application.DoEvents();
+
+                    int bookNum = _service.GetBookNum(code);
+                    if (bookNum <= 0) continue;
+
+                    var bookProposals = _service.ScanBook(proj, bookNum, _loadedSourceReferences, _vernacularMgr, options, _sourceVernacularMgr);
+                    _currentProposals.AddRange(bookProposals);
+                }
+
+                SetSpinnerStep(3, $"Indexed {_currentProposals.Count} canonical passage mappings", isDone: true);
+
+                // Step 4: Translating Source Vernacular -> Target Vernacular
+                SetSpinnerStep(4, $"Translating citations to target '{projName}' & Scripture Settings...");
+                System.Threading.Thread.Sleep(300); // Smooth animation for translator confirmation
+                SetSpinnerStep(4, $"Translated {_currentProposals.Count} citations to target {projName}", isDone: true);
             }
-            else if (_loadedSourceReferences.Count == 0)
+            finally
             {
-                LoadSelectedSource();
+                _progressBar.Visible = false;
+                HideSpinner();
             }
 
-            if (_loadedSourceReferences.Count == 0)
-            {
-                MessageBox.Show("No source references available to transfer. Please select an installed Paratext Resource with available references, a source project, or load a reference file.", "No References Available", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
-
-            var options = new TransferOptions
-            {
-                NameStyle = GetSelectedNameStyle(),
-                ScriptureSettings = _scriptureSettings,
-                UseParentheses = _chkParentheses.Checked,
-                InsertHeadingIfMissing = _chkHeading.Checked,
-                CleanTrailingPunctuation = _chkCleanPunct.Checked,
-                RemoveExistingReferences = _chkRemoveExisting.Checked
-            };
-
-            _progressBar.Visible = true;
-            _progressBar.Value = 0;
-            _currentProposals.Clear();
-
-            int total = targetBookCodes.Count;
-            int done = 0;
-
-            foreach (string code in targetBookCodes)
-            {
-                done++;
-                _progressBar.Value = (int)((done / (double)total) * 100);
-                _lblStatus.Text = $"Scanning {code} ({done} of {total})...";
-                Application.DoEvents();
-
-                int bookNum = _service.GetBookNum(code);
-                if (bookNum <= 0) continue;
-
-                var bookProposals = _service.ScanBook(proj, bookNum, _loadedSourceReferences, _vernacularMgr, options, _sourceVernacularMgr);
-                _currentProposals.AddRange(bookProposals);
-            }
-
-            _progressBar.Visible = false;
             PopulateGrid();
             UpdateStatusCounts();
         }
@@ -643,9 +797,10 @@ namespace ReferenceTransfer.Plugin.UI
 
                 row.Cells["ColApply"].Value = p.IsAccepted;
                 row.Cells["ColVerse"].Value = p.ReferenceLocation;
-                row.Cells["ColType"].Value = p.ActionType;
-                row.Cells["ColProposed"].Value = p.ProposedReference;
+                row.Cells["ColCanonical"].Value = p.CanonicalReference;
                 row.Cells["ColSource"].Value = sourceDisplay;
+                row.Cells["ColProposed"].Value = p.ProposedReference;
+                row.Cells["ColType"].Value = p.ActionType;
                 row.Cells["ColHeading"].Value = p.ExistingHeading;
                 row.Cells["ColWarning"].Value = p.Warning;
 
