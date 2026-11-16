@@ -115,5 +115,89 @@ namespace ReferenceTransfer.Core.Engine
             }
             return 1;
         }
+
+        /// <summary>
+        /// Extracts parallel passage references (\r) directly from raw USFM text.
+        /// Faithfully reproduces Paratext's RegEx Pal extraction behavior with zero reliance on token APIs.
+        /// Links section heading \r markers to the upcoming verse they introduce.
+        /// </summary>
+        public static List<ParallelReferenceEntry> ExtractReferencesFromUsfm(string usfmText, string bookCode, string sourceType = "RESOURCE")
+        {
+            var results = new List<ParallelReferenceEntry>();
+            if (string.IsNullOrWhiteSpace(usfmText))
+                return results;
+
+            var lines = usfmText.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
+            int currentChapter = 0;
+            int currentVerse = 0;
+            var pendingRefs = new List<string>();
+
+            for (int i = 0; i < lines.Length; i++)
+            {
+                string line = lines[i].Trim();
+                if (string.IsNullOrEmpty(line))
+                    continue;
+
+                // 1. Chapter marker: \c <num>
+                var cMatch = Regex.Match(line, @"^\\c\s+(\d+)");
+                if (cMatch.Success)
+                {
+                    // Flush pending refs from previous chapter if any
+                    FlushPendingRefs(pendingRefs, results, bookCode, currentChapter, currentVerse > 0 ? currentVerse : 1, sourceType);
+                    currentChapter = int.Parse(cMatch.Groups[1].Value);
+                    currentVerse = 0;
+                    continue;
+                }
+
+                // 2. Parallel reference marker: \r <reference>
+                var rMatch = Regex.Match(line, @"(?:^|\s)\\r\s+([^\r\n\\]+)");
+                if (rMatch.Success)
+                {
+                    string rawRef = rMatch.Groups[1].Value.Trim();
+                    if (!string.IsNullOrEmpty(rawRef))
+                    {
+                        pendingRefs.Add(rawRef);
+                    }
+                    continue;
+                }
+
+                // 3. Verse marker: \v <num>
+                var vMatch = Regex.Match(line, @"(?:^|\s)\\v\s+(\d+)");
+                if (vMatch.Success)
+                {
+                    int vNum = int.Parse(vMatch.Groups[1].Value);
+                    currentVerse = vNum;
+                    if (pendingRefs.Count > 0)
+                    {
+                        FlushPendingRefs(pendingRefs, results, bookCode, currentChapter, vNum, sourceType);
+                    }
+                }
+            }
+
+            // Flush any remaining pending refs at end of book
+            FlushPendingRefs(pendingRefs, results, bookCode, currentChapter, currentVerse > 0 ? currentVerse : 1, sourceType);
+
+            return results;
+        }
+
+        private static void FlushPendingRefs(List<string> pendingRefs, List<ParallelReferenceEntry> results, string bookCode, int chapter, int verse, string sourceType)
+        {
+            if (pendingRefs.Count == 0 || chapter <= 0)
+                return;
+
+            foreach (var r in pendingRefs)
+            {
+                results.Add(new ParallelReferenceEntry
+                {
+                    BookCode = bookCode.ToUpperInvariant(),
+                    Chapter = chapter,
+                    TargetVerse = verse,
+                    RawReference = r,
+                    SourceLocation = $"{bookCode} {chapter}:{verse}",
+                    SourceType = sourceType
+                });
+            }
+            pendingRefs.Clear();
+        }
     }
 }

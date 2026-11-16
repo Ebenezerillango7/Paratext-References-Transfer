@@ -107,7 +107,7 @@ namespace ReferenceTransfer.Plugin
             return ids.OrderBy(x => x).ToList();
         }
 
-        public IProject? FindProjectOrResource(string id)
+        public IReadOnlyProject? FindProjectOrResource(string id)
         {
             if (string.IsNullOrWhiteSpace(id) || _host == null) return null;
 
@@ -131,7 +131,7 @@ namespace ReferenceTransfer.Plugin
                         if (string.Equals(r.ShortName, id, StringComparison.OrdinalIgnoreCase) ||
                             string.Equals(r.ID, id, StringComparison.OrdinalIgnoreCase))
                         {
-                            if (r is IProject proj) return proj;
+                            return r;
                         }
                     }
                 }
@@ -141,7 +141,87 @@ namespace ReferenceTransfer.Plugin
             return null;
         }
 
-        public List<ParallelReferenceEntry> ExtractReferencesFromProject(IProject sourceProject, List<string> bookCodes)
+        /// <summary>
+        /// Retrieves raw USFM text of a book directly from Paratext's internal ScrText.
+        /// Bypasses DBL resource token restrictions (ValidateApiAccess) to enable live reference extraction.
+        /// </summary>
+        public static string? GetUsfmTextForBook(IReadOnlyProject? project, int bookNum)
+        {
+            if (project == null || bookNum <= 0) return null;
+
+            // 1. Primary: Access underlying ScrText via reflection from ProjectWrapper (works for all DBL resources & projects)
+            try
+            {
+                var type = project.GetType();
+                var prop = type.GetProperty("ScrText", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                object? scrText = prop?.GetValue(project);
+                if (scrText == null)
+                {
+                    var field = type.GetField("scrText", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                    scrText = field?.GetValue(project);
+                }
+
+                if (scrText != null)
+                {
+                    var getTextMethod = scrText.GetType().GetMethod("GetText", new[] { typeof(int) });
+                    if (getTextMethod != null)
+                    {
+                        string? text = getTextMethod.Invoke(scrText, new object[] { bookNum }) as string;
+                        if (!string.IsNullOrEmpty(text))
+                            return text;
+                    }
+                }
+            }
+            catch { }
+
+            // 2. Secondary: Access ScrText from ParatextData ScrTextCollection.Find
+            try
+            {
+                var asm = AppDomain.CurrentDomain.GetAssemblies()
+                    .FirstOrDefault(a => a.GetName().Name == "ParatextData");
+                var stcType = asm?.GetType("Paratext.Data.ScrTextCollection");
+                if (stcType != null)
+                {
+                    var findMethod = stcType.GetMethod("Find", BindingFlags.Public | BindingFlags.Static, null, new[] { typeof(string), typeof(bool), typeof(bool) }, null);
+                    object? scrText = findMethod?.Invoke(null, new object[] { project.ShortName, true, true });
+                    if (scrText != null)
+                    {
+                        var getTextMethod = scrText.GetType().GetMethod("GetText", new[] { typeof(int) });
+                        string? text = getTextMethod?.Invoke(scrText, new object[] { bookNum }) as string;
+                        if (!string.IsNullOrEmpty(text))
+                            return text;
+                    }
+                }
+            }
+            catch { }
+
+            // 3. Fallback for editable Paratext projects: Read disk SFM file
+            try
+            {
+                string[] baseDirs = {
+                    @"D:\Transdata\My Paratext 9 Projects",
+                    @"C:\My Paratext 9 Projects"
+                };
+                foreach (var dir in baseDirs)
+                {
+                    string projDir = Path.Combine(dir, project.ShortName);
+                    if (Directory.Exists(projDir))
+                    {
+                        string pattern = $"{bookNum:D2}*.SFM";
+                        var files = Directory.GetFiles(projDir, pattern);
+                        if (files.Length > 0)
+                        {
+                            return File.ReadAllText(files[0]);
+                        }
+                    }
+                }
+            }
+            catch { }
+
+            return null;
+        }
+
+        public List<ParallelReferenceEntry> ExtractReferencesFromProject(IReadOnlyProject sourceProject, List<string> bookCodes)
         {
             var entries = new List<ParallelReferenceEntry>();
             if (sourceProject == null || bookCodes == null) return entries;
@@ -151,86 +231,96 @@ namespace ReferenceTransfer.Plugin
                 int bookNum = GetBookNum(bookCode);
                 if (bookNum <= 0) continue;
 
-                int lastChap = 0;
-                try { lastChap = sourceProject.Versification.GetLastChapter(bookNum); }
-                catch { continue; }
-
-                for (int ch = 1; ch <= lastChap; ch++)
+                // 1. Direct USFM RegEx extraction (bypasses DBL resource token security block)
+                string? usfmText = GetUsfmTextForBook(sourceProject, bookNum);
+                if (!string.IsNullOrEmpty(usfmText))
                 {
-                    IEnumerable<IUSFMToken>? tokens;
-                    try { tokens = sourceProject.GetUSFMTokens(bookNum, ch); }
+                    var bookEntries = ReferenceParser.ExtractReferencesFromUsfm(usfmText!, bookCode, sourceProject.ShortName);
+                    entries.AddRange(bookEntries);
+                    continue;
+                }
+
+                // 2. Fallback token-based extraction for editable projects if USFM text was not directly accessible
+                if (!sourceProject.IsResource && sourceProject is IProject normalProject)
+                {
+                    int lastChap = 0;
+                    try { lastChap = normalProject.Versification.GetLastChapter(bookNum); }
                     catch { continue; }
-                    if (tokens == null) continue;
 
-                    int currentVerse = 0;
-                    bool inRef = false;
-                    var currentRef = new System.Text.StringBuilder();
-
-                    foreach (var tok in tokens)
+                    for (int ch = 1; ch <= lastChap; ch++)
                     {
-                        if (tok is IUSFMMarkerToken m)
-                        {
-                            if (m.Marker == "r")
-                            {
-                                inRef = true;
-                                currentRef.Clear();
-                                if (!string.IsNullOrWhiteSpace(m.Data))
-                                    currentRef.Append(m.Data.Trim());
-                            }
-                            else if (m.Marker == "v" && !string.IsNullOrEmpty(m.Data))
-                            {
-                                inRef = false;
-                                string vStr = m.Data.Split(' ', '-')[0];
-                                int.TryParse(vStr, out currentVerse);
+                        IEnumerable<IUSFMToken>? tokens;
+                        try { tokens = normalProject.GetUSFMTokens(bookNum, ch); }
+                        catch { continue; }
+                        if (tokens == null) continue;
 
-                                if (currentRef.Length > 0)
+                        int currentVerse = 0;
+                        bool inRef = false;
+                        var currentRef = new System.Text.StringBuilder();
+
+                        foreach (var tok in tokens)
+                        {
+                            if (tok is IUSFMMarkerToken m)
+                            {
+                                if (m.Marker == "r")
                                 {
-                                    string refText = currentRef.ToString().Trim();
+                                    inRef = true;
                                     currentRef.Clear();
-                                    entries.Add(new ParallelReferenceEntry
-                                    {
-                                        SourceType = sourceProject.ShortName,
-                                        BookCode = bookCode,
-                                        Chapter = ch,
-                                        TargetVerse = currentVerse > 0 ? currentVerse : 1,
-                                        RawReference = refText,
-                                        SourceLocation = $"{bookCode} {ch}:{currentVerse}"
-                                    });
+                                    if (!string.IsNullOrWhiteSpace(m.Data))
+                                        currentRef.Append(m.Data.Trim());
                                 }
-                            }
-                            else
-                            {
-                                // Other markers (\s, \p, \m, \q, \c) close text collection for \r,
-                                // but do not discard currentRef because paragraph markers (\p, \m)
-                                // often sit between \r and \v.
-                                inRef = false;
-                            }
-                        }
-                        else if (tok is IUSFMTextToken t)
-                        {
-                            if (inRef && !string.IsNullOrEmpty(t.Text))
-                            {
-                                if (currentRef.Length > 0 && !currentRef.ToString().EndsWith(" ") && !t.Text.StartsWith(" "))
+                                else if (m.Marker == "v" && !string.IsNullOrEmpty(m.Data))
                                 {
-                                    currentRef.Append(" ");
+                                    inRef = false;
+                                    string vStr = m.Data.Split(' ', '-')[0];
+                                    int.TryParse(vStr, out currentVerse);
+
+                                    if (currentRef.Length > 0)
+                                    {
+                                        string refText = currentRef.ToString().Trim();
+                                        currentRef.Clear();
+                                        entries.Add(new ParallelReferenceEntry
+                                        {
+                                            SourceType = sourceProject.ShortName,
+                                            BookCode = bookCode,
+                                            Chapter = ch,
+                                            TargetVerse = currentVerse > 0 ? currentVerse : 1,
+                                            RawReference = refText,
+                                            SourceLocation = $"{bookCode} {ch}:{currentVerse}"
+                                        });
+                                    }
                                 }
-                                currentRef.Append(t.Text);
+                                else
+                                {
+                                    inRef = false;
+                                }
+                            }
+                            else if (tok is IUSFMTextToken t)
+                            {
+                                if (inRef && !string.IsNullOrEmpty(t.Text))
+                                {
+                                    if (currentRef.Length > 0 && !currentRef.ToString().EndsWith(" ") && !t.Text.StartsWith(" "))
+                                    {
+                                        currentRef.Append(" ");
+                                    }
+                                    currentRef.Append(t.Text);
+                                }
                             }
                         }
-                    }
 
-                    if (currentRef.Length > 0)
-                    {
-                        string refText = currentRef.ToString().Trim();
-                        entries.Add(new ParallelReferenceEntry
+                        if (currentRef.Length > 0)
                         {
-                            SourceType = sourceProject.ShortName,
-                            BookCode = bookCode,
-                            Chapter = ch,
-                            TargetVerse = currentVerse > 0 ? currentVerse : 1,
-                            RawReference = refText,
-                            SourceLocation = $"{bookCode} {ch}:{currentVerse}"
-                        });
+                            string refText = currentRef.ToString().Trim();
+                            entries.Add(new ParallelReferenceEntry
+                            {
+                                SourceType = sourceProject.ShortName,
+                                BookCode = bookCode,
+                                Chapter = ch,
+                                TargetVerse = currentVerse > 0 ? currentVerse : 1,
+                                RawReference = refText,
+                                SourceLocation = $"{bookCode} {ch}:{currentVerse}"
+                            });
+                        }
                     }
                 }
             }
@@ -264,7 +354,7 @@ namespace ReferenceTransfer.Plugin
             return mgr;
         }
 
-        public VernacularBookNameManager LoadVernacularManager(IProject? project)
+        public VernacularBookNameManager LoadVernacularManager(IReadOnlyProject? project)
         {
             if (project == null) return new VernacularBookNameManager();
 
@@ -275,20 +365,20 @@ namespace ReferenceTransfer.Plugin
             // 2. Query Paratext's live IProject API (GetFormattedReference) for all books (works for resources & projects)
             try
             {
-                if (project.Versification != null)
+                if (project is IProject p && p.Versification != null)
                 {
                     for (int b = 1; b <= 66; b++)
                     {
                         string code = CanonicalBookLists.All66Books[b - 1];
                         try
                         {
-                            var vRef = project.Versification.CreateReference(b, 1, 1);
+                            var vRef = p.Versification.CreateReference(b, 1, 1);
                             if (vRef != null)
                             {
-                                string abbr = CleanFormattedBookName(project.GetFormattedReference(vRef, BookNameType.Abbreviation));
-                                string shortName = CleanFormattedBookName(project.GetFormattedReference(vRef, BookNameType.ShortName));
-                                string longName = CleanFormattedBookName(project.GetFormattedReference(vRef, BookNameType.LongName));
-                                string parallelForm = CleanFormattedBookName(project.GetFormattedReference(vRef, BookNameType.ParallelPassagesForm));
+                                string abbr = CleanFormattedBookName(p.GetFormattedReference(vRef, BookNameType.Abbreviation));
+                                string shortName = CleanFormattedBookName(p.GetFormattedReference(vRef, BookNameType.ShortName));
+                                string longName = CleanFormattedBookName(p.GetFormattedReference(vRef, BookNameType.LongName));
+                                string parallelForm = CleanFormattedBookName(p.GetFormattedReference(vRef, BookNameType.ParallelPassagesForm));
 
                                 if (!string.IsNullOrEmpty(abbr) || !string.IsNullOrEmpty(shortName) || !string.IsNullOrEmpty(longName))
                                 {
@@ -301,6 +391,45 @@ namespace ReferenceTransfer.Plugin
                             }
                         }
                         catch { }
+                    }
+                }
+            }
+            catch { }
+
+            // 3. Fallback / supplement: Read BookNames directly from underlying ScrText
+            try
+            {
+                var type = project.GetType();
+                var prop = type.GetProperty("ScrText", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                object? scrText = prop?.GetValue(project);
+                if (scrText == null)
+                {
+                    var field = type.GetField("scrText", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                    scrText = field?.GetValue(project);
+                }
+
+                if (scrText != null)
+                {
+                    var bnProp = scrText.GetType().GetProperty("BookNames", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                    object? bookNames = bnProp?.GetValue(scrText);
+                    if (bookNames != null)
+                    {
+                        var getAbbr = bookNames.GetType().GetMethod("GetAbbreviation", new[] { typeof(int) });
+                        var getShort = bookNames.GetType().GetMethod("GetShortName", new[] { typeof(int) });
+                        var getLong = bookNames.GetType().GetMethod("GetLongName", new[] { typeof(int) });
+
+                        for (int b = 1; b <= 66; b++)
+                        {
+                            string code = CanonicalBookLists.All66Books[b - 1];
+                            string? abbr = getAbbr?.Invoke(bookNames, new object[] { b }) as string;
+                            string? shortName = getShort?.Invoke(bookNames, new object[] { b }) as string;
+                            string? longName = getLong?.Invoke(bookNames, new object[] { b }) as string;
+
+                            if (!string.IsNullOrEmpty(abbr) || !string.IsNullOrEmpty(shortName) || !string.IsNullOrEmpty(longName))
+                            {
+                                mgr.RegisterBook(code, abbr ?? string.Empty, shortName ?? string.Empty, longName ?? string.Empty);
+                            }
+                        }
                     }
                 }
             }

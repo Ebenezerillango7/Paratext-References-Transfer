@@ -100,5 +100,65 @@ GEN 10:0:
             Assert.False(resources[2].HasReferences);
             Assert.Equal(0, resources[2].ReferenceCount);
         }
+
+        [Fact]
+        public void ExtractReferencesFromUsfm_HindiUsfmText_ExtractsReferencesAndAlignsWithUpcomingVerse()
+        {
+            string hindiUsfm = @"\id GEN 01-GEN-hin-ov.usfm Hindi OV
+\c 5
+\s1 आदम की वंशावली
+\r (1 इति 1:1-4)
+\p
+\v 1 आदम की वंशावली की पुस्तक यह है: जिस दिन परमेश्वर ने मनुष्य की सृष्टि की...
+\v 2 उसने नर और नारी करके उनकी सृष्टि की;
+\c 10
+\s1 नूह के पुत्रों की वंशावली
+\r (1 इति 1:5-23)
+\p
+\v 1 नूह के पुत्रों, अर्थात् शेम, हाम, और येपेत की वंशावली यह है...
+\c 11
+\v 9 इस कारण उस नगर का नाम बाबेल पड़ा...
+\s1 शेम की वंशावली
+\r (1 इति 1:24-27)
+\p
+\v 10 शेम की वंशावली यह है: जब शेम एक सौ वर्ष का था...";
+
+            var refs = ReferenceParser.ExtractReferencesFromUsfm(hindiUsfm, "GEN", "HINOVBSI");
+
+            Assert.Equal(3, refs.Count);
+
+            // Gen 5:1
+            Assert.Equal("GEN", refs[0].BookCode);
+            Assert.Equal(5, refs[0].Chapter);
+            Assert.Equal(1, refs[0].TargetVerse);
+            Assert.Equal("(1 इति 1:1-4)", refs[0].RawReference);
+            Assert.Equal("HINOVBSI", refs[0].SourceType);
+
+            // Gen 10:1
+            Assert.Equal("GEN", refs[1].BookCode);
+            Assert.Equal(10, refs[1].Chapter);
+            Assert.Equal(1, refs[1].TargetVerse);
+            Assert.Equal("(1 इति 1:5-23)", refs[1].RawReference);
+
+            // Gen 11:10 (upcoming verse after v9)
+            Assert.Equal("GEN", refs[2].BookCode);
+            Assert.Equal(11, refs[2].Chapter);
+            Assert.Equal(10, refs[2].TargetVerse);
+            Assert.Equal("(1 इति 1:24-27)", refs[2].RawReference);
+        }
+
+        [Fact]
+        public void ExtractReferencesFromUsfm_TextWithoutReferences_ReturnsEmpty()
+        {
+            string taovbsiUsfm = @"\id GEN Tamil Old Version
+\c 1
+\p
+\v 1 ஆதியிலே தேவன் வானத்தையும் பூமியையும் சிருஷ்டித்தார்.
+\v 2 பூமியானது ஒழுங்கின்மையும் வெறுமையுமாய் இருந்தது...";
+
+            var refs = ReferenceParser.ExtractReferencesFromUsfm(taovbsiUsfm, "GEN", "TAOVBSI");
+
+            Assert.Empty(refs);
+        }
     }
 }

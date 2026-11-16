@@ -414,22 +414,26 @@ namespace ReferenceTransfer.Plugin.UI
                 {
                     _grid.Rows[i].Cells["ColCanonical"].Value = p.CanonicalReference;
                     _grid.Rows[i].Cells["ColProposed"].Value = p.ProposedReference;
-
-                    // Also refresh source display
-                    if (_sourceVernacularMgr != null && _sourceVernacularMgr.IsLoaded)
-                    {
-                        string sourceDisplay = _sourceVernacularMgr.TranslateCitation(
-                            p.SourceReference,
-                            useParens,
-                            cleanPunct,
-                            _sourceScriptureSettings.DefaultMarkerRStyle,
-                            _sourceScriptureSettings);
-                        _grid.Rows[i].Cells["ColSource"].Value = sourceDisplay;
-                    }
+                    _grid.Rows[i].Cells["ColSource"].Value = FormatDisplayReference(p.SourceReference, useParens, cleanPunct);
                 }
             }
 
             _grid.Refresh();
+        }
+
+        private static string FormatDisplayReference(string rawRef, bool useParens, bool cleanPunct)
+        {
+            if (string.IsNullOrWhiteSpace(rawRef)) return string.Empty;
+            string s = rawRef.Trim();
+            if ((s.StartsWith("(") && s.EndsWith(")")) || (s.StartsWith("[") && s.EndsWith("]")))
+            {
+                s = s.Substring(1, s.Length - 2).Trim();
+            }
+            if (cleanPunct)
+            {
+                s = s.TrimEnd('.', ':', ';', ',');
+            }
+            return useParens ? $"({s})" : s;
         }
 
         private void LoadInitialData()
@@ -713,7 +717,7 @@ namespace ReferenceTransfer.Plugin.UI
                 // Step 2: Handle source extraction (Resource, Project, or Preset)
                 SetSpinnerStep(2, $"Running RegEx Pal extraction on {srcLabel}...");
 
-                IProject? srcProj = null;
+                IReadOnlyProject? srcProj = null;
 
                 if (_cboSourceType.SelectedIndex == 1) // Paratext Project
                 {
@@ -822,16 +826,7 @@ namespace ReferenceTransfer.Plugin.UI
                 var row = _grid.Rows[rowIdx];
                 row.Tag = p;
 
-                string sourceDisplay = p.SourceReference;
-                if (_sourceVernacularMgr != null && _sourceVernacularMgr.IsLoaded)
-                {
-                    sourceDisplay = _sourceVernacularMgr.TranslateCitation(
-                        p.SourceReference,
-                        useParens,
-                        cleanPunct,
-                        _sourceScriptureSettings.DefaultMarkerRStyle,
-                        _sourceScriptureSettings);
-                }
+                string sourceDisplay = FormatDisplayReference(p.SourceReference, useParens, cleanPunct);
 
                 row.Cells["ColApply"].Value = p.IsAccepted;
                 row.Cells["ColVerse"].Value = p.ReferenceLocation;
