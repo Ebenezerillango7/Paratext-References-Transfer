@@ -42,16 +42,18 @@ It enables translation teams and consultants to seamlessly transfer parallel pas
 
 ## 🚀 Quick Start / Installation
 
-### Automated Installation
-To install into your local Paratext 9.5 installation:
-1. Ensure Paratext is closed.
-2. Run `scripts/install-plugin.bat` (or `scripts/install-plugin.ps1` from PowerShell).
-3. Start Paratext 9.5. The plugin appears under **Tools > Parallel Passage References Transfer**.
+### Turnkey Installation (No Development Tools Needed)
+If you downloaded this repository (or downloaded the ZIP from GitHub):
+1. Close **Paratext 9**.
+2. Double-click **`Install-Plugin.bat`** in the repository root (or inside the `installer/` folder).
+3. The installer automatically discovers your Paratext 9 directory, deploys the plugin, unblocks Windows security filters, and updates the Paratext plugin cache.
+4. Launch **Paratext 9**. You will find the tool under:
+   **Tools > Transfer Parallel Passage References...**
 
 ### Automated Uninstallation
 To remove the plugin:
-1. Ensure Paratext is closed.
-2. Run `scripts/uninstall-plugin.bat` (or click **Uninstall Plugin...** in the plugin window header).
+1. Close **Paratext 9**.
+2. Run `installer/uninstall-plugin.bat` (or click **Uninstall Plugin...** inside the plugin window header).
 
 ---
 

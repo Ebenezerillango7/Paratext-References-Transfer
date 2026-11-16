@@ -164,7 +164,7 @@ namespace ReferenceTransfer.Tests
             string usfm = @"\id GEN
 \c 5
 \s Adam's Descendants
-\r (1 Chronicles 1:1-4)
+\r (1CH 1:1-4)
 \v 1 This is the book of the generations of Adam.";
 
             var sourceRefs = new List<ParallelReferenceEntry>
@@ -179,7 +179,7 @@ namespace ReferenceTransfer.Tests
             Assert.True(proposals[0].IsDuplicate);
             Assert.False(proposals[0].IsAccepted);
             Assert.Equal("Adam's Descendants", proposals[0].ExistingHeading);
-            Assert.Equal("(1 Chronicles 1:1-4)", proposals[0].ExistingReference);
+            Assert.Equal("(1CH 1:1-4)", proposals[0].ExistingReference);
         }
     }
 }

@@ -39,3 +39,7 @@ OLD Resource_Presets/
 .vs/
 packages/
 *.ptxplg
+
+# Allow distribution installer bundle
+!installer/
+!installer/**

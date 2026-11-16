@@ -52,9 +52,11 @@ if (-not (Test-Path $targetPluginDir)) {
 
 # 4. Resolve source files
 $candidateSources = @(
+    (Join-Path $PSScriptRoot "..\installer"),
     (Join-Path $PSScriptRoot "..\src\ReferenceTransfer.Plugin\bin\Release\net48"),
     (Join-Path $PSScriptRoot "..\src\ReferenceTransfer.Plugin\bin\Debug\net48"),
     $PSScriptRoot,
+    (Join-Path $PSScriptRoot "..\dist\ReferenceTransfer"),
     (Join-Path $PSScriptRoot "dist\ReferenceTransfer")
 )
 

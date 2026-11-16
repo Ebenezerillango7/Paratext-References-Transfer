@@ -98,8 +98,8 @@ namespace ReferenceTransfer.Tests
             {
                 var loaded = ReferenceTransfer.Core.Models.ProjectScriptureSettings.LoadFromSettingsXml(mtep1SettingsPath);
                 Assert.True(loaded.IsLoaded);
-                Assert.Equal(".", loaded.ChapterVerseSeparator);
-                Assert.Equal("-", loaded.RangeIndicator);
+                Assert.Equal(":", loaded.ChapterVerseSeparator);
+                Assert.Equal("–", loaded.RangeIndicator);
                 Assert.Equal(ReferenceTransfer.Core.Models.BookNameStyle.ShortName, loaded.DefaultMarkerRStyle);
             }
         }
