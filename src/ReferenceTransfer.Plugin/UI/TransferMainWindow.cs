@@ -178,7 +178,7 @@ namespace ReferenceTransfer.Plugin.UI
 
             _cboSingleBook = new ComboBox { Location = new Point(795, 49), Width = 90, DropDownStyle = ComboBoxStyle.DropDownList, Visible = false };
 
-            _lblVernacularStatus = new Label { Text = "Loading book names...", ForeColor = Color.FromArgb(40, 120, 40), Location = new Point(895, 52), AutoSize = true };
+            _lblVernacularStatus = new Label { Text = "Loading scripture reference settings...", ForeColor = Color.FromArgb(40, 120, 40), Location = new Point(895, 52), AutoSize = true };
 
             // Row 3: Options
             _chkParentheses = new CheckBox { Text = "Use Parentheses (e.g. (1Chr 1:1))", Checked = true, Location = new Point(15, 88), AutoSize = true };
@@ -621,12 +621,21 @@ namespace ReferenceTransfer.Plugin.UI
                     _cboNameStyle.SelectedIndex = (int)_scriptureSettings.DefaultMarkerRStyle;
                 }
 
-                string bookInfo = _vernacularMgr.IsLoaded ? $"{_vernacularMgr.BookCount} books mapped" : "BookNames not found";
-                string sepInfo = _scriptureSettings.IsLoaded
-                    ? $"C:V='{_scriptureSettings.ChapterVerseSeparator}', Range='{_scriptureSettings.RangeIndicator}'"
-                    : "Default Separators";
+                if (_scriptureSettings.IsLoaded || _vernacularMgr.IsLoaded)
+                {
+                    _lblVernacularStatus.Text = "✓ Scripture reference settings loaded";
+                    _lblVernacularStatus.ForeColor = Color.FromArgb(30, 130, 60);
 
-                _lblVernacularStatus.Text = $"✓ {bookInfo} | {sepInfo}";
+                    string details = $"{_vernacularMgr.BookCount} books mapped\nChapter:Verse separator: '{_scriptureSettings.ChapterVerseSeparator}'\nRange indicator: '{_scriptureSettings.RangeIndicator}'";
+                    var tt = new ToolTip();
+                    tt.SetToolTip(_lblVernacularStatus, details);
+                }
+                else
+                {
+                    _lblVernacularStatus.Text = "⚠ Default English settings used";
+                    _lblVernacularStatus.ForeColor = Color.FromArgb(180, 83, 9);
+                }
+
                 UpdateProposedReferencesInGrid();
             }
         }
