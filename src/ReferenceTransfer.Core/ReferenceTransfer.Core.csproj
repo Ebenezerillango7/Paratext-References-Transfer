@@ -13,8 +13,4 @@
     <Description>Core extraction, parsing, vernacular translation, and USFM transfer engine for Paratext Parallel References.</Description>
   </PropertyGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="ResourceData\*.txt" />
-  </ItemGroup>
-
 </Project>

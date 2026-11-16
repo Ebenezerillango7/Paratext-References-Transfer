@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using ReferenceTransfer.Core.Engine;
+using ReferenceTransfer.Core.Models;
 using Xunit;
 
 namespace ReferenceTransfer.Tests
@@ -183,6 +184,39 @@ namespace ReferenceTransfer.Tests
             // Tamil vernacular citation -> Canonical code
             string canon4 = targetMgr.ToCanonicalCitation("(1 நாளாகமம் 1:1-4)", sourceMgr);
             Assert.Equal("1CH 1:1-4", canon4);
+
+            // RegEx Pal Hindi raw extract with abbreviations -> Canonical codes
+            string canon5 = targetMgr.ToCanonicalCitation("(निर्ग 34:18-26; व्य 16:1-17)", sourceMgr);
+            Assert.Equal("EXO 34:18-26; DEU 16:1-17", canon5);
+        }
+
+        [Fact]
+        public void TranslateCitation_TranslatesHindiAbbreviations_ToTamilTarget()
+        {
+            var targetMgr = new VernacularBookNameManager();
+            targetMgr.RegisterBook("EXO", "யாத்", "யாத்திராகமம்", "யாத்திராகமம்");
+            targetMgr.RegisterBook("DEU", "உபா", "உபாகமம்", "உபாகமம்");
+
+            var sourceMgr = new VernacularBookNameManager();
+            sourceMgr.RegisterBook("EXO", "निर्ग", "निर्गमन", "निर्गमन");
+            sourceMgr.RegisterBook("DEU", "व्य", "व्यवस्थाविवरण", "व्यवस्थाविवरण");
+
+            var settings = new ProjectScriptureSettings
+            {
+                ChapterVerseSeparator = ":",
+                RangeIndicator = "-",
+                BookSequenceSeparator = "; "
+            };
+
+            string result = targetMgr.TranslateCitation(
+                "(निर्ग 34:18-26; व्य 16:1-17)",
+                useParentheses: true,
+                cleanPunctuation: true,
+                style: BookNameStyle.ShortName,
+                settings: settings,
+                sourceMgr: sourceMgr);
+
+            Assert.Equal("(யாத்திராகமம் 34:18-26; உபாகமம் 16:1-17)", result);
         }
     }
 }

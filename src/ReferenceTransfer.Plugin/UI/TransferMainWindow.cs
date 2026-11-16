@@ -21,6 +21,7 @@ namespace ReferenceTransfer.Plugin.UI
         private ComboBox _cboSourceType = null!;
         private ComboBox _cboSourceVal = null!;
         private Button _btnBrowseFile = null!;
+        private Button _btnPaste = null!;
 
         private ComboBox _cboTargetProject = null!;
         private ComboBox _cboNameStyle = null!;
@@ -155,6 +156,9 @@ namespace ReferenceTransfer.Plugin.UI
             _btnBrowseFile = new Button { Text = "Browse...", Location = new Point(740, 10), Width = 80, Height = 28, Visible = false };
             _btnBrowseFile.Click += BtnBrowseFile_Click;
 
+            _btnPaste = new Button { Text = "📋 Paste Clipboard", Location = new Point(825, 10), Width = 130, Height = 28, Visible = false };
+            _btnPaste.Click += BtnPaste_Click;
+
             // Row 2: Target Project, Name Style, Scope
             var lblTarget = new Label { Text = "2. Target Project:", Font = new Font("Segoe UI", 9f, FontStyle.Bold), Location = new Point(15, 52), AutoSize = true };
             _cboTargetProject = new ComboBox { Location = new Point(150, 49), Width = 160, DropDownStyle = ComboBoxStyle.DropDownList };
@@ -228,6 +232,7 @@ namespace ReferenceTransfer.Plugin.UI
             controlsPanel.Controls.Add(_cboSourceType);
             controlsPanel.Controls.Add(_cboSourceVal);
             controlsPanel.Controls.Add(_btnBrowseFile);
+            controlsPanel.Controls.Add(_btnPaste);
             controlsPanel.Controls.Add(lblTarget);
             controlsPanel.Controls.Add(_cboTargetProject);
             controlsPanel.Controls.Add(lblStyle);
@@ -469,6 +474,7 @@ namespace ReferenceTransfer.Plugin.UI
             if (sel == 0) // Paratext Resource
             {
                 _btnBrowseFile.Visible = false;
+                _btnPaste.Visible = false;
                 _cboSourceVal.Visible = true;
                 var installedRes = _service.GetInstalledResourceIds();
                 var resources = ResourceCatalog.GetAvailableResources(installedRes);
@@ -488,6 +494,7 @@ namespace ReferenceTransfer.Plugin.UI
             else if (sel == 1) // Paratext Project
             {
                 _btnBrowseFile.Visible = false;
+                _btnPaste.Visible = false;
                 _cboSourceVal.Visible = true;
                 var projects = _service.GetAllProjects();
                 foreach (var p in projects)
@@ -504,11 +511,12 @@ namespace ReferenceTransfer.Plugin.UI
                     _lblStatus.Text = "No Paratext projects found.";
                 }
             }
-            else if (sel == 2) // Custom File
+            else if (sel == 2) // Custom File / RegEx Pal Export
             {
                 _btnBrowseFile.Visible = true;
+                _btnPaste.Visible = true;
                 _cboSourceVal.Visible = true;
-                _lblStatus.Text = "Click 'Browse...' to choose a reference text file (.txt or .sfm).";
+                _lblStatus.Text = "Click 'Browse...' to choose a reference text file (.txt/.sfm) or 'Paste Clipboard' to import RegEx Pal output.";
             }
         }
 
@@ -518,27 +526,20 @@ namespace ReferenceTransfer.Plugin.UI
             if (_cboSourceType.SelectedIndex == 0 && _cboSourceVal.SelectedItem is ResourceItemInfo res)
             {
                 sourceId = res.Id;
-                if (res.HasReferences)
-                {
-                    _loadedSourceReferences = ResourceCatalog.LoadResource(res.Id);
-                    _lblStatus.Text = $"Selected resource: {res.DisplayName} ({_loadedSourceReferences.Count} references ready).";
-                }
-                else
-                {
-                    _loadedSourceReferences.Clear();
-                    _lblStatus.Text = $"Resource '{res.Id}' is installed. No pre-extracted reference stream available for this resource. Use a resource with verified references (e.g. TAOVBSI, ESVUS16, HINOVBSI) or load via 'Custom File'.";
-                }
+                _loadedSourceReferences.Clear();
+                _lblStatus.Text = $"Selected resource: {res.DisplayName}. Click 'Preview References (Scan)' to extract live references.";
             }
             else if (_cboSourceType.SelectedIndex == 1 && _cboSourceVal.SelectedItem != null)
             {
                 sourceId = _cboSourceVal.SelectedItem.ToString() ?? string.Empty;
                 _loadedSourceReferences.Clear();
-                _lblStatus.Text = $"Source project selected: {sourceId}. References will be extracted on Scan.";
+                _lblStatus.Text = $"Source project selected: {sourceId}. Click 'Preview References (Scan)' to extract live references.";
             }
 
             if (!string.IsNullOrEmpty(sourceId))
             {
-                _sourceVernacularMgr = _service.LoadVernacularManager(sourceId);
+                var srcProj = _service.FindProjectOrResource(sourceId);
+                _sourceVernacularMgr = _service.LoadVernacularManager(srcProj);
                 _sourceScriptureSettings = _service.LoadProjectScriptureSettings(sourceId);
             }
             else
@@ -563,6 +564,36 @@ namespace ReferenceTransfer.Plugin.UI
                     _loadedSourceReferences = ReferenceParser.ParseReferencesText(text, "CUSTOM");
                     _lblStatus.Text = $"Loaded custom file: {Path.GetFileName(ofd.FileName)} ({_loadedSourceReferences.Count} references).";
                 }
+            }
+        }
+
+        private void BtnPaste_Click(object? sender, EventArgs e)
+        {
+            try
+            {
+                string text = Clipboard.GetText();
+                if (string.IsNullOrWhiteSpace(text))
+                {
+                    MessageBox.Show("Clipboard is empty. Please copy text from RegEx Pal or a reference list first.", "Empty Clipboard", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                var parsed = ReferenceParser.ParseReferencesText(text, "CLIPBOARD");
+                if (parsed.Count == 0)
+                {
+                    MessageBox.Show("No valid parallel references could be parsed from the clipboard text.\n\nExpected RegEx Pal extract format:\nGEN 5:0: \\r (1 इति 1:1-4)\nEXO 18:12: \\r (व्य 1:9-18)", "No References Found", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+
+                _loadedSourceReferences = parsed;
+                _cboSourceVal.Items.Clear();
+                _cboSourceVal.Items.Add($"[Clipboard: {_loadedSourceReferences.Count} references loaded]");
+                _cboSourceVal.SelectedIndex = 0;
+                _lblStatus.Text = $"Loaded {_loadedSourceReferences.Count} references from clipboard.";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Could not read from clipboard: {ex.Message}", "Clipboard Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -682,33 +713,33 @@ namespace ReferenceTransfer.Plugin.UI
                 // Step 2: Handle source extraction (Resource, Project, or Preset)
                 SetSpinnerStep(2, $"Running RegEx Pal extraction on {srcLabel}...");
 
+                IProject? srcProj = null;
+
                 if (_cboSourceType.SelectedIndex == 1) // Paratext Project
                 {
                     string srcName = _cboSourceVal.SelectedItem?.ToString() ?? string.Empty;
-                    var srcProj = _service.GetAllProjects().FirstOrDefault(p => p.ShortName == srcName);
-                    if (srcProj != null)
-                    {
-                        _loadedSourceReferences = _service.ExtractReferencesFromProject(srcProj, targetBookCodes);
-                    }
+                    srcProj = _service.GetAllProjects().FirstOrDefault(p => p.ShortName == srcName);
                 }
                 else if (_cboSourceType.SelectedIndex == 0 && _cboSourceVal.SelectedItem is ResourceItemInfo res)
                 {
-                    // Check if resource can be extracted live via Paratext IProject
-                    var allProjs = _service.GetAllProjects(includeResources: true);
-                    var resProj = allProjs.FirstOrDefault(p => string.Equals(p.ShortName, res.Id, StringComparison.OrdinalIgnoreCase));
-                    if (resProj != null)
-                    {
-                        _loadedSourceReferences = _service.ExtractReferencesFromProject(resProj, targetBookCodes);
-                    }
-
-                    if (_loadedSourceReferences.Count == 0 && res.HasReferences)
-                    {
-                        _loadedSourceReferences = ResourceCatalog.LoadResource(res.Id);
-                    }
+                    srcProj = _service.FindProjectOrResource(res.Id);
                 }
-                else if (_loadedSourceReferences.Count == 0)
+
+                if (srcProj != null)
                 {
-                    LoadSelectedSource();
+                    _loadedSourceReferences = _service.ExtractReferencesFromProject(srcProj, targetBookCodes);
+                    _sourceVernacularMgr = _service.LoadVernacularManager(srcProj);
+                    _sourceScriptureSettings = _service.LoadProjectScriptureSettings(srcProj.ShortName);
+                }
+                else if (_cboSourceType.SelectedIndex == 2 && _loadedSourceReferences.Count == 0)
+                {
+                    // Fallback to reload if custom file path in combobox
+                    string path = _cboSourceVal.SelectedItem?.ToString() ?? string.Empty;
+                    if (File.Exists(path))
+                    {
+                        string text = File.ReadAllText(path);
+                        _loadedSourceReferences = ReferenceParser.ParseReferencesText(text, "CUSTOM");
+                    }
                 }
 
                 SetSpinnerStep(2, $"Extracted {_loadedSourceReferences.Count} parallel references from source", isDone: true);
@@ -716,7 +747,14 @@ namespace ReferenceTransfer.Plugin.UI
                 if (_loadedSourceReferences.Count == 0)
                 {
                     HideSpinner();
-                    MessageBox.Show("No source references available to transfer. Please select an installed Paratext Resource with available references, a source project, or load a reference file.", "No References Available", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show(
+                        $"No parallel passage references (\\r) were found in '{srcLabel}' for the selected book scope.\n\n" +
+                        "This source does not contain \\r parallel passage markers in its text.\n\n" +
+                        "Please select a source that contains parallel passage references (e.g. HINOVBSI) or load references via 'Custom File' / 'Paste Clipboard'.",
+                        "No References Found",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+                    _lblStatus.Text = $"No parallel references found in {srcLabel}.";
                     return;
                 }
 

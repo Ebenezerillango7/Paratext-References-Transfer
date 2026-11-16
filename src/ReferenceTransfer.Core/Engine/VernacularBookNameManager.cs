@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using ReferenceTransfer.Core.Models;
@@ -8,14 +10,15 @@ using ReferenceTransfer.Core.Models;
 namespace ReferenceTransfer.Core.Engine
 {
     /// <summary>
-    /// Loads and resolves vernacular book names from Paratext BookNames.xml.
-    /// Translates citation references (e.g. "1 Chronicles 1.1-4" -> "(1நாளா 1:1-4)").
+    /// Loads and resolves vernacular book names from Paratext BookNames.xml or live Paratext IProject.
+    /// Translates citation references across canonical, source, and target vernacular representations.
     /// </summary>
     public class VernacularBookNameManager
     {
         private readonly Dictionary<string, string> _codeToAbbr = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, string> _codeToShort = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, string> _codeToLong = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, List<string>> _codeToAliases = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, string> _englishNameToCode = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         public bool IsLoaded => _codeToAbbr.Count > 0;
@@ -74,15 +77,41 @@ namespace ReferenceTransfer.Core.Engine
             _codeToLong[code] = bestLong;
         }
 
+        public void RegisterBookAlias(string code, string? alias)
+        {
+            if (string.IsNullOrWhiteSpace(code) || string.IsNullOrWhiteSpace(alias)) return;
+            code = code.Trim().ToUpperInvariant();
+            string cleanAlias = alias!.Trim();
+
+            if (!_codeToAliases.TryGetValue(code, out var list))
+            {
+                list = new List<string>();
+                _codeToAliases[code] = list;
+            }
+
+            if (!list.Contains(cleanAlias, StringComparer.OrdinalIgnoreCase))
+            {
+                list.Add(cleanAlias);
+            }
+        }
+
         public IEnumerable<string> GetAllBookCodes() => _codeToAbbr.Keys;
 
         public List<string> GetAllNamesForCode(string bookCode)
         {
             var list = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            if (_codeToLong.TryGetValue(bookCode, out string l) && !string.IsNullOrEmpty(l)) list.Add(l);
-            if (_codeToShort.TryGetValue(bookCode, out string s) && !string.IsNullOrEmpty(s)) list.Add(s);
-            if (_codeToAbbr.TryGetValue(bookCode, out string a) && !string.IsNullOrEmpty(a)) list.Add(a);
-            return new List<string>(list);
+            if (_codeToLong.TryGetValue(bookCode, out string l) && !string.IsNullOrEmpty(l)) list.Add(l.Trim());
+            if (_codeToShort.TryGetValue(bookCode, out string s) && !string.IsNullOrEmpty(s)) list.Add(s.Trim());
+            if (_codeToAbbr.TryGetValue(bookCode, out string a) && !string.IsNullOrEmpty(a)) list.Add(a.Trim());
+            if (_codeToAliases.TryGetValue(bookCode, out var aliases))
+            {
+                foreach (var alias in aliases)
+                {
+                    if (!string.IsNullOrEmpty(alias)) list.Add(alias.Trim());
+                }
+            }
+            // Always sort longest first to prevent prefix collisions
+            return list.OrderByDescending(x => x.Length).ToList();
         }
 
         public string GetVernacularName(string bookCode, BookNameStyle style = BookNameStyle.Abbreviation)
@@ -114,7 +143,9 @@ namespace ReferenceTransfer.Core.Engine
 
         public string GetVernacularAbbreviation(string bookCode)
         {
-            return GetVernacularName(bookCode, BookNameStyle.Abbreviation);
+            if (_codeToAbbr.TryGetValue(bookCode, out string a) && !string.IsNullOrEmpty(a))
+                return a;
+            return bookCode;
         }
 
         public string ResolveCodeFromEnglishName(string nameOrCode)
@@ -128,6 +159,27 @@ namespace ReferenceTransfer.Core.Engine
                 return clean.ToUpperInvariant();
 
             return clean;
+        }
+
+        /// <summary>
+        /// Normalizes Indic / Devanagari / Tamil digits to ASCII Arabic numerals.
+        /// </summary>
+        public static string NormalizeIndicDigitsToAscii(string text)
+        {
+            if (string.IsNullOrEmpty(text)) return text;
+            var sb = new StringBuilder(text.Length);
+            foreach (char c in text)
+            {
+                // Devanagari digits U+0966 to U+096F
+                if (c >= '\u0966' && c <= '\u096F')
+                    sb.Append((char)('0' + (c - '\u0966')));
+                // Tamil digits U+0BE6 to U+0BEF
+                else if (c >= '\u0BE6' && c <= '\u0BEF')
+                    sb.Append((char)('0' + (c - '\u0BE6')));
+                else
+                    sb.Append(c);
+            }
+            return sb.ToString();
         }
 
         /// <summary>
@@ -164,6 +216,9 @@ namespace ReferenceTransfer.Core.Engine
                 s = s.TrimEnd('.', ':', ';', ',');
             }
 
+            // Normalize Indic digits if present
+            s = NormalizeIndicDigitsToAscii(s);
+
             // 1. Cross-chapter ranges (e.g. 35.30-36.1 or 35:30—36:1)
             string chapRange = !string.IsNullOrEmpty(settings.ChapterRangeSeparator) ? settings.ChapterRangeSeparator : settings.RangeIndicator;
             s = Regex.Replace(s, @"(?<=\d[:.]\d+)\s*[-–—]\s*(?=\d+[:.]\d+)", chapRange);
@@ -185,23 +240,31 @@ namespace ReferenceTransfer.Core.Engine
             // replace source vernacular names with target vernacular names
             if (sourceMgr != null && sourceMgr.IsLoaded)
             {
+                var allMappings = new List<(string Name, string TargetName)>();
                 foreach (var code in sourceMgr.GetAllBookCodes())
                 {
                     string targetName = GetVernacularName(code, style);
                     if (string.IsNullOrEmpty(targetName)) continue;
 
-                    var sourceNames = sourceMgr.GetAllNamesForCode(code);
-                    foreach (var sName in sourceNames)
+                    foreach (var sName in sourceMgr.GetAllNamesForCode(code))
                     {
-                        if (string.IsNullOrWhiteSpace(sName) || sName == targetName) continue;
-                        string pattern = $@"(?<!\p{{L}}){Regex.Escape(sName)}(?!\p{{L}})";
-                        s = Regex.Replace(s, pattern, targetName, RegexOptions.IgnoreCase);
+                        if (!string.IsNullOrWhiteSpace(sName) && sName != targetName)
+                        {
+                            allMappings.Add((sName, targetName));
+                        }
                     }
+                }
+
+                // Match longer names before substrings (e.g. '1 इतिहास' before '1 इति')
+                foreach (var (sName, targetName) in allMappings.OrderByDescending(m => m.Name.Length))
+                {
+                    string pattern = $@"(?<!\p{{L}}){Regex.Escape(sName)}(?!\p{{L}})";
+                    s = Regex.Replace(s, pattern, targetName, RegexOptions.IgnoreCase);
                 }
             }
 
             // 7. Replace each English book name with target vernacular name according to chosen style
-            foreach (var kvp in _englishNameToCode)
+            foreach (var kvp in _englishNameToCode.OrderByDescending(k => k.Key.Length))
             {
                 string engName = kvp.Key;
                 string bookCode = kvp.Value;
@@ -249,6 +312,9 @@ namespace ReferenceTransfer.Core.Engine
             s = Regex.Replace(s, @"^\\r\s*", string.Empty);
             s = s.TrimEnd('.', ':', ';', ',');
 
+            // Normalize Indic digits
+            s = NormalizeIndicDigitsToAscii(s);
+
             // Standardize chapter/verse separators to : and ranges to -
             s = Regex.Replace(s, @"(?<=\b\d+)[:.](?=\d+\b)", ":");
             s = Regex.Replace(s, @"(?<=\b\d+)\s*[-–—]\s*(?=\d+\b)", "-");
@@ -256,20 +322,26 @@ namespace ReferenceTransfer.Core.Engine
             // 1. Match source vernacular names to canonical codes (if source manager provided)
             if (sourceMgr != null && sourceMgr.IsLoaded)
             {
+                var allMappings = new List<(string Name, string Code)>();
                 foreach (var code in sourceMgr.GetAllBookCodes())
                 {
-                    var sourceNames = sourceMgr.GetAllNamesForCode(code);
-                    foreach (var sName in sourceNames)
+                    foreach (var sName in sourceMgr.GetAllNamesForCode(code))
                     {
-                        if (string.IsNullOrWhiteSpace(sName)) continue;
-                        string pattern = $@"(?<!\p{{L}}){Regex.Escape(sName)}(?!\p{{L}})";
-                        s = Regex.Replace(s, pattern, code, RegexOptions.IgnoreCase);
+                        if (!string.IsNullOrWhiteSpace(sName))
+                            allMappings.Add((sName, code));
                     }
+                }
+
+                // Longest names first
+                foreach (var (sName, code) in allMappings.OrderByDescending(m => m.Name.Length))
+                {
+                    string pattern = $@"(?<!\p{{L}}){Regex.Escape(sName)}(?!\p{{L}})";
+                    s = Regex.Replace(s, pattern, code, RegexOptions.IgnoreCase);
                 }
             }
 
-            // 2. Match English aliases to canonical codes
-            foreach (var kvp in _englishNameToCode)
+            // 2. Match English aliases to canonical codes (longest first)
+            foreach (var kvp in _englishNameToCode.OrderByDescending(k => k.Key.Length))
             {
                 string engName = kvp.Key;
                 string bookCode = kvp.Value;
@@ -280,15 +352,20 @@ namespace ReferenceTransfer.Core.Engine
             // 3. Match this manager's own vernacular names to canonical codes
             if (IsLoaded)
             {
+                var allMappings = new List<(string Name, string Code)>();
                 foreach (var code in GetAllBookCodes())
                 {
-                    var names = GetAllNamesForCode(code);
-                    foreach (var n in names)
+                    foreach (var n in GetAllNamesForCode(code))
                     {
-                        if (string.IsNullOrWhiteSpace(n)) continue;
-                        string pattern = $@"(?<!\p{{L}}){Regex.Escape(n)}(?!\p{{L}})";
-                        s = Regex.Replace(s, pattern, code, RegexOptions.IgnoreCase);
+                        if (!string.IsNullOrWhiteSpace(n))
+                            allMappings.Add((n, code));
                     }
+                }
+
+                foreach (var (n, code) in allMappings.OrderByDescending(m => m.Name.Length))
+                {
+                    string pattern = $@"(?<!\p{{L}}){Regex.Escape(n)}(?!\p{{L}})";
+                    s = Regex.Replace(s, pattern, code, RegexOptions.IgnoreCase);
                 }
             }
 
@@ -299,79 +376,79 @@ namespace ReferenceTransfer.Core.Engine
         {
             var aliases = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
             {
-                ["GEN"] = new[] { "Genesis", "Gen" },
+                ["GEN"] = new[] { "Genesis", "Gen", "Ge", "Gn" },
                 ["EXO"] = new[] { "Exodus", "Exod", "Exo", "Ex" },
-                ["LEV"] = new[] { "Leviticus", "Lev" },
-                ["NUM"] = new[] { "Numbers", "Num" },
-                ["DEU"] = new[] { "Deuteronomy", "Deut", "Deu" },
-                ["JOS"] = new[] { "Joshua", "Josh", "Jos" },
-                ["JDG"] = new[] { "Judges", "Judg", "Jdg" },
-                ["RUT"] = new[] { "Ruth", "Rut" },
-                ["1SA"] = new[] { "1 Samuel", "1 Sam", "1Sa", "1 S" },
-                ["2SA"] = new[] { "2 Samuel", "2 Sam", "2Sa", "2 S" },
-                ["1KI"] = new[] { "1 Kings", "1 Kgs", "1Ki", "1 K" },
-                ["2KI"] = new[] { "2 Kings", "2 Kgs", "2Ki", "2 K" },
-                ["1CH"] = new[] { "1 Chronicles", "1 Chron", "1Ch", "1 Chr" },
-                ["2CH"] = new[] { "2 Chronicles", "2 Chron", "2Ch", "2 Chr" },
+                ["LEV"] = new[] { "Leviticus", "Lev", "Le", "Lv" },
+                ["NUM"] = new[] { "Numbers", "Num", "Nu", "Nm", "Nb" },
+                ["DEU"] = new[] { "Deuteronomy", "Deut", "Deu", "Dt" },
+                ["JOS"] = new[] { "Joshua", "Josh", "Jos", "Jsh" },
+                ["JDG"] = new[] { "Judges", "Judg", "Jdg", "Jg", "Jdgs" },
+                ["RUT"] = new[] { "Ruth", "Rth", "Ru" },
+                ["1SA"] = new[] { "1 Samuel", "1 Sam", "1Sa", "1S", "I Samuel", "1st Samuel" },
+                ["2SA"] = new[] { "2 Samuel", "2 Sam", "2Sa", "2S", "II Samuel", "2nd Samuel" },
+                ["1KI"] = new[] { "1 Kings", "1 Kgs", "1Ki", "1K", "I Kings", "1st Kings" },
+                ["2KI"] = new[] { "2 Kings", "2 Kgs", "2Ki", "2K", "II Kings", "2nd Kings" },
+                ["1CH"] = new[] { "1 Chronicles", "1 Chron", "1Chr", "1Ch", "I Chronicles", "1st Chronicles" },
+                ["2CH"] = new[] { "2 Chronicles", "2 Chron", "2Chr", "2Ch", "II Chronicles", "2nd Chronicles" },
                 ["EZR"] = new[] { "Ezra", "Ezr" },
-                ["NEH"] = new[] { "Nehemiah", "Neh" },
-                ["EST"] = new[] { "Esther", "Esth", "Est" },
-                ["JOB"] = new[] { "Job" },
-                ["PSA"] = new[] { "Psalms", "Psalm", "Psa", "Ps" },
-                ["PRO"] = new[] { "Proverbs", "Prov", "Pro" },
-                ["ECC"] = new[] { "Ecclesiastes", "Eccles", "Ecc" },
-                ["SNG"] = new[] { "Song of Solomon", "Song of Songs", "Song", "Sng" },
-                ["ISA"] = new[] { "Isaiah", "Isa" },
-                ["JER"] = new[] { "Jeremiah", "Jer" },
-                ["LAM"] = new[] { "Lamentations", "Lam" },
-                ["EZK"] = new[] { "Ezekiel", "Ezek", "Ezk" },
-                ["DAN"] = new[] { "Daniel", "Dan" },
-                ["HOS"] = new[] { "Hosea", "Hos" },
-                ["JOL"] = new[] { "Joel", "Jol" },
-                ["AMO"] = new[] { "Amos", "Amo" },
-                ["OBA"] = new[] { "Obadiah", "Obad", "Oba" },
-                ["JON"] = new[] { "Jonah", "Jon" },
-                ["MIC"] = new[] { "Micah", "Mic" },
-                ["NAM"] = new[] { "Nahum", "Nah", "Nam" },
-                ["HAB"] = new[] { "Habakkuk", "Hab" },
-                ["ZEP"] = new[] { "Zephaniah", "Zeph", "Zep" },
-                ["HAG"] = new[] { "Haggai", "Hag" },
-                ["ZEC"] = new[] { "Zechariah", "Zech", "Zec" },
-                ["MAL"] = new[] { "Malachi", "Mal" },
-                ["MAT"] = new[] { "Matthew", "Matt", "Mat" },
-                ["MRK"] = new[] { "Mark", "Mrk", "Mk" },
-                ["LUK"] = new[] { "Luke", "Luk", "Lk" },
-                ["JHN"] = new[] { "John", "Jhn", "Jn" },
-                ["ACT"] = new[] { "Acts", "Act" },
-                ["ROM"] = new[] { "Romans", "Rom" },
-                ["1CO"] = new[] { "1 Corinthians", "1 Cor", "1Co" },
-                ["2CO"] = new[] { "2 Corinthians", "2 Cor", "2Co" },
-                ["GAL"] = new[] { "Galatians", "Gal" },
-                ["EPH"] = new[] { "Ephesians", "Eph" },
-                ["PHP"] = new[] { "Philippians", "Phil", "Php" },
-                ["COL"] = new[] { "Colossians", "Col" },
-                ["1TH"] = new[] { "1 Thessalonians", "1 Thess", "1Th" },
-                ["2TH"] = new[] { "2 Thessalonians", "2 Thess", "2Th" },
-                ["1TI"] = new[] { "1 Timothy", "1 Tim", "1Ti" },
-                ["2TI"] = new[] { "2 Timothy", "2 Tim", "2Ti" },
-                ["TIT"] = new[] { "Titus", "Tit" },
-                ["PHM"] = new[] { "Philemon", "Phlm", "Phm" },
+                ["NEH"] = new[] { "Nehemiah", "Neh", "Ne" },
+                ["EST"] = new[] { "Esther", "Esth", "Est", "Es" },
+                ["JOB"] = new[] { "Job", "Jb" },
+                ["PSA"] = new[] { "Psalms", "Psalm", "Psa", "Ps", "Psm", "Pss" },
+                ["PRO"] = new[] { "Proverbs", "Prov", "Pro", "Pr", "Prv" },
+                ["ECC"] = new[] { "Ecclesiastes", "Eccles", "Ecc", "Ec", "Qoh" },
+                ["SNG"] = new[] { "Song of Solomon", "Song of Songs", "Song", "Canticles", "Cant" },
+                ["ISA"] = new[] { "Isaiah", "Isa", "Is" },
+                ["JER"] = new[] { "Jeremiah", "Jer", "Je", "Jr" },
+                ["LAM"] = new[] { "Lamentations", "Lam", "La" },
+                ["EZK"] = new[] { "Ezekiel", "Ezek", "Eze", "Ezk" },
+                ["DAN"] = new[] { "Daniel", "Dan", "Da", "Dn" },
+                ["HOS"] = new[] { "Hosea", "Hos", "Ho" },
+                ["JOL"] = new[] { "Joel", "Joe", "Jl" },
+                ["AMO"] = new[] { "Amos", "Amo", "Am" },
+                ["OBA"] = new[] { "Obadiah", "Obad", "Oba", "Ob" },
+                ["JON"] = new[] { "Jonah", "Jnh", "Jon" },
+                ["MIC"] = new[] { "Micah", "Mic", "Mc" },
+                ["NAM"] = new[] { "Nahum", "Nah", "Na" },
+                ["HAB"] = new[] { "Habakkuk", "Hab", "Hb" },
+                ["ZEP"] = new[] { "Zephaniah", "Zeph", "Zep", "Zp" },
+                ["HAG"] = new[] { "Haggai", "Hag", "Hg" },
+                ["ZEC"] = new[] { "Zechariah", "Zech", "Zec", "Zc" },
+                ["MAL"] = new[] { "Malachi", "Mal", "Ml" },
+                ["MAT"] = new[] { "Matthew", "Matt", "Mat", "Mt" },
+                ["MRK"] = new[] { "Mark", "Mrk", "Mk", "Mr" },
+                ["LUK"] = new[] { "Luke", "Luk", "Lk", "Lu" },
+                ["JHN"] = new[] { "John", "Joh", "Jhn", "Jn" },
+                ["ACT"] = new[] { "Acts", "Act", "Ac" },
+                ["ROM"] = new[] { "Romans", "Rom", "Ro", "Rm" },
+                ["1CO"] = new[] { "1 Corinthians", "1 Cor", "1Co", "I Corinthians", "1st Corinthians" },
+                ["2CO"] = new[] { "2 Corinthians", "2 Cor", "2Co", "II Corinthians", "2nd Corinthians" },
+                ["GAL"] = new[] { "Galatians", "Gal", "Ga" },
+                ["EPH"] = new[] { "Ephesians", "Eph", "Ep" },
+                ["PHP"] = new[] { "Philippians", "Phil", "Php", "Pp" },
+                ["COL"] = new[] { "Colossians", "Col", "Co" },
+                ["1TH"] = new[] { "1 Thessalonians", "1 Thess", "1Th", "I Thessalonians", "1st Thessalonians" },
+                ["2TH"] = new[] { "2 Thessalonians", "2 Thess", "2Th", "II Thessalonians", "2nd Thessalonians" },
+                ["1TI"] = new[] { "1 Timothy", "1 Tim", "1Ti", "I Timothy", "1st Timothy" },
+                ["2TI"] = new[] { "2 Timothy", "2 Tim", "2Ti", "II Timothy", "2nd Timothy" },
+                ["TIT"] = new[] { "Titus", "Tit", "Ti" },
+                ["PHM"] = new[] { "Philemon", "Philem", "Phm", "Pm" },
                 ["HEB"] = new[] { "Hebrews", "Heb" },
-                ["JAS"] = new[] { "James", "Jas" },
-                ["1PE"] = new[] { "1 Peter", "1 Pet", "1Pe" },
-                ["2PE"] = new[] { "2 Peter", "2 Pet", "2Pe" },
-                ["1JN"] = new[] { "1 John", "1Jn" },
-                ["2JN"] = new[] { "2 John", "2Jn" },
-                ["3JN"] = new[] { "3 John", "3Jn" },
-                ["JUD"] = new[] { "Jude", "Jud" },
-                ["REV"] = new[] { "Revelation", "Rev" }
+                ["JAS"] = new[] { "James", "Jas", "Jm" },
+                ["1PE"] = new[] { "1 Peter", "1 Pet", "1Pe", "1P", "I Peter", "1st Peter" },
+                ["2PE"] = new[] { "2 Peter", "2 Pet", "2Pe", "2P", "II Peter", "2nd Peter" },
+                ["1JN"] = new[] { "1 John", "1Jn", "1J", "I John", "1st John" },
+                ["2JN"] = new[] { "2 John", "2Jn", "2J", "II John", "2nd John" },
+                ["3JN"] = new[] { "3 John", "3Jn", "3J", "III John", "3rd John" },
+                ["JUD"] = new[] { "Jude", "Jud", "Jd" },
+                ["REV"] = new[] { "Revelation", "Rev", "Re" }
             };
 
             foreach (var kvp in aliases)
             {
                 string code = kvp.Key;
                 _englishNameToCode[code] = code;
-                foreach (string alias in kvp.Value)
+                foreach (var alias in kvp.Value)
                 {
                     _englishNameToCode[alias] = code;
                 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Collections;
 using System.Reflection;
 using Paratext.PluginInterfaces;
@@ -106,6 +107,40 @@ namespace ReferenceTransfer.Plugin
             return ids.OrderBy(x => x).ToList();
         }
 
+        public IProject? FindProjectOrResource(string id)
+        {
+            if (string.IsNullOrWhiteSpace(id) || _host == null) return null;
+
+            try
+            {
+                var allProjs = GetAllProjects(includeResources: true);
+                var found = allProjs.FirstOrDefault(p =>
+                    string.Equals(p.ShortName, id, StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(p.ID, id, StringComparison.OrdinalIgnoreCase));
+                if (found != null) return found;
+            }
+            catch { }
+
+            try
+            {
+                var allRes = _host.AllResources;
+                if (allRes != null)
+                {
+                    foreach (var r in allRes)
+                    {
+                        if (string.Equals(r.ShortName, id, StringComparison.OrdinalIgnoreCase) ||
+                            string.Equals(r.ID, id, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if (r is IProject proj) return proj;
+                        }
+                    }
+                }
+            }
+            catch { }
+
+            return null;
+        }
+
         public List<ParallelReferenceEntry> ExtractReferencesFromProject(IProject sourceProject, List<string> bookCodes)
         {
             var entries = new List<ParallelReferenceEntry>();
@@ -128,40 +163,74 @@ namespace ReferenceTransfer.Plugin
                     if (tokens == null) continue;
 
                     int currentVerse = 0;
-                    string? pendingRef = null;
+                    bool inRef = false;
+                    var currentRef = new System.Text.StringBuilder();
 
                     foreach (var tok in tokens)
                     {
                         if (tok is IUSFMMarkerToken m)
                         {
-                            if (m.Marker == "v" && !string.IsNullOrEmpty(m.Data))
+                            if (m.Marker == "r")
                             {
+                                inRef = true;
+                                currentRef.Clear();
+                                if (!string.IsNullOrWhiteSpace(m.Data))
+                                    currentRef.Append(m.Data.Trim());
+                            }
+                            else if (m.Marker == "v" && !string.IsNullOrEmpty(m.Data))
+                            {
+                                inRef = false;
                                 string vStr = m.Data.Split(' ', '-')[0];
                                 int.TryParse(vStr, out currentVerse);
 
-                                if (pendingRef != null)
+                                if (currentRef.Length > 0)
                                 {
+                                    string refText = currentRef.ToString().Trim();
+                                    currentRef.Clear();
                                     entries.Add(new ParallelReferenceEntry
                                     {
                                         SourceType = sourceProject.ShortName,
                                         BookCode = bookCode,
                                         Chapter = ch,
                                         TargetVerse = currentVerse > 0 ? currentVerse : 1,
-                                        RawReference = pendingRef,
+                                        RawReference = refText,
                                         SourceLocation = $"{bookCode} {ch}:{currentVerse}"
                                     });
-                                    pendingRef = null;
                                 }
                             }
-                            else if (m.Marker == "r" && !string.IsNullOrEmpty(m.Data))
+                            else
                             {
-                                pendingRef = m.Data.Trim();
+                                // Other markers (\s, \p, \m, \q, \c) close text collection for \r,
+                                // but do not discard currentRef because paragraph markers (\p, \m)
+                                // often sit between \r and \v.
+                                inRef = false;
                             }
                         }
-                        else if (tok is IUSFMTextToken t && pendingRef != null)
+                        else if (tok is IUSFMTextToken t)
                         {
-                            pendingRef += " " + t.Text.Trim();
+                            if (inRef && !string.IsNullOrEmpty(t.Text))
+                            {
+                                if (currentRef.Length > 0 && !currentRef.ToString().EndsWith(" ") && !t.Text.StartsWith(" "))
+                                {
+                                    currentRef.Append(" ");
+                                }
+                                currentRef.Append(t.Text);
+                            }
                         }
+                    }
+
+                    if (currentRef.Length > 0)
+                    {
+                        string refText = currentRef.ToString().Trim();
+                        entries.Add(new ParallelReferenceEntry
+                        {
+                            SourceType = sourceProject.ShortName,
+                            BookCode = bookCode,
+                            Chapter = ch,
+                            TargetVerse = currentVerse > 0 ? currentVerse : 1,
+                            RawReference = refText,
+                            SourceLocation = $"{bookCode} {ch}:{currentVerse}"
+                        });
                     }
                 }
             }
@@ -195,9 +264,58 @@ namespace ReferenceTransfer.Plugin
             return mgr;
         }
 
-        public VernacularBookNameManager LoadVernacularManager(IProject project)
+        public VernacularBookNameManager LoadVernacularManager(IProject? project)
         {
-            return LoadVernacularManager(project?.ShortName ?? string.Empty);
+            if (project == null) return new VernacularBookNameManager();
+
+            // 1. Try disk-based BookNames.xml if available (for projects)
+            var mgr = LoadVernacularManager(project.ShortName);
+            if (mgr.IsLoaded) return mgr;
+
+            // 2. Query Paratext's live IProject API (GetFormattedReference) for all books (works for resources & projects)
+            try
+            {
+                if (project.Versification != null)
+                {
+                    for (int b = 1; b <= 66; b++)
+                    {
+                        string code = CanonicalBookLists.All66Books[b - 1];
+                        try
+                        {
+                            var vRef = project.Versification.CreateReference(b, 1, 1);
+                            if (vRef != null)
+                            {
+                                string abbr = CleanFormattedBookName(project.GetFormattedReference(vRef, BookNameType.Abbreviation));
+                                string shortName = CleanFormattedBookName(project.GetFormattedReference(vRef, BookNameType.ShortName));
+                                string longName = CleanFormattedBookName(project.GetFormattedReference(vRef, BookNameType.LongName));
+                                string parallelForm = CleanFormattedBookName(project.GetFormattedReference(vRef, BookNameType.ParallelPassagesForm));
+
+                                if (!string.IsNullOrEmpty(abbr) || !string.IsNullOrEmpty(shortName) || !string.IsNullOrEmpty(longName))
+                                {
+                                    mgr.RegisterBook(code, abbr, shortName, longName);
+                                    if (!string.IsNullOrEmpty(parallelForm) && !string.Equals(parallelForm, abbr, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        mgr.RegisterBookAlias(code, parallelForm);
+                                    }
+                                }
+                            }
+                        }
+                        catch { }
+                    }
+                }
+            }
+            catch { }
+
+            return mgr;
+        }
+
+        private static string CleanFormattedBookName(string? formattedRef)
+        {
+            if (string.IsNullOrWhiteSpace(formattedRef)) return string.Empty;
+            string s = formattedRef.Trim();
+            // Remove chapter:verse suffix like " 1:1" or " 1.1"
+            s = Regex.Replace(s, @"\s+\d+[:.]\d+$", string.Empty);
+            return s.Trim();
         }
 
         public ProjectScriptureSettings LoadProjectScriptureSettings(string id)

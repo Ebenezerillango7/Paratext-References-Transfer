@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using ReferenceTransfer.Core.Models;
 
 namespace ReferenceTransfer.Core.Engine
@@ -21,23 +20,11 @@ namespace ReferenceTransfer.Core.Engine
     }
 
     /// <summary>
-    /// Manages discovery and retrieval of real installed Paratext DBL resources.
-    /// Strictly operates on actual installed resources without hardcoded presets.
+    /// Manages discovery and cataloging of real installed Paratext DBL resources.
+    /// Strictly operates on actual installed resources without hardcoded mock files.
     /// </summary>
     public static class ResourceCatalog
     {
-        private static readonly Dictionary<string, (string ResourceFile, int Count)> EmbeddedResources =
-            new Dictionary<string, (string, int)>(StringComparer.OrdinalIgnoreCase)
-            {
-                ["TAOVBSI"] = ("ReferenceTransfer.Core.ResourceData.TAOVBSI_References.txt", 600),
-                ["ESVUS16"] = ("ReferenceTransfer.Core.ResourceData.ESVUS16_References.txt", 600),
-                ["ESV"] = ("ReferenceTransfer.Core.ResourceData.ESVUS16_References.txt", 600),
-                ["HINOVBSI"] = ("ReferenceTransfer.Core.ResourceData.HINOVBSI_References.txt", 272),
-                ["HINDI-BSI"] = ("ReferenceTransfer.Core.ResourceData.HINOVBSI_References.txt", 272),
-                ["GNTD"] = ("ReferenceTransfer.Core.ResourceData.GNTD_References.txt", 272),
-                ["IRVHIN"] = ("ReferenceTransfer.Core.ResourceData.IRVHin_References.txt", 272),
-            };
-
         private static readonly Dictionary<string, (string FullName, string Language)> DblKnownCatalog =
             new Dictionary<string, (string, string)>(StringComparer.OrdinalIgnoreCase)
             {
@@ -84,7 +71,7 @@ namespace ReferenceTransfer.Core.Engine
             };
 
         /// <summary>
-        /// Returns ONLY installed Paratext resources. Zero hardcoded presets.
+        /// Returns ONLY installed Paratext resources. Zero hardcoded mock presets.
         /// </summary>
         public static List<ResourceItemInfo> GetAvailableResources(IEnumerable<string>? installedResourceIds)
         {
@@ -104,15 +91,8 @@ namespace ReferenceTransfer.Core.Engine
                 string fullName = hasMeta ? meta.FullName : id;
                 string language = hasMeta ? meta.Language : string.Empty;
 
-                bool hasRefs = EmbeddedResources.TryGetValue(id, out var refInfo);
-                int refCount = hasRefs ? refInfo.Count : 0;
-
                 string display;
-                if (hasRefs)
-                {
-                    display = $"{id} - {fullName} ({refCount} references ready)";
-                }
-                else if (!string.IsNullOrEmpty(language))
+                if (!string.IsNullOrEmpty(language))
                 {
                     display = $"{id} - {fullName} ({language})";
                 }
@@ -127,60 +107,19 @@ namespace ReferenceTransfer.Core.Engine
                     FullName = fullName,
                     Language = language,
                     DisplayName = display,
-                    HasReferences = hasRefs,
-                    ReferenceCount = refCount,
+                    HasReferences = false,
+                    ReferenceCount = 0,
                     IsInstalled = true
                 });
             }
 
-            // Order so that resources with ready-to-transfer references appear at top, then alphabetical
-            return list.OrderByDescending(r => r.HasReferences)
-                       .ThenBy(r => r.Id)
-                       .ToList();
+            return list.OrderBy(r => r.Id).ToList();
         }
 
         public static List<ParallelReferenceEntry> LoadResource(string resourceId)
         {
-            if (string.IsNullOrWhiteSpace(resourceId))
-                return new List<ParallelReferenceEntry>();
-
-            if (EmbeddedResources.TryGetValue(resourceId, out var info))
-            {
-                string text = ReadEmbeddedResource(info.ResourceFile);
-                if (!string.IsNullOrEmpty(text))
-                {
-                    return ReferenceParser.ParseReferencesText(text, resourceId);
-                }
-            }
-
-            // Check if there is an exact or prefix match
-            foreach (var kvp in EmbeddedResources)
-            {
-                if (string.Equals(kvp.Key, resourceId, StringComparison.OrdinalIgnoreCase) ||
-                    resourceId.StartsWith(kvp.Key, StringComparison.OrdinalIgnoreCase))
-                {
-                    string text = ReadEmbeddedResource(kvp.Value.ResourceFile);
-                    if (!string.IsNullOrEmpty(text))
-                    {
-                        return ReferenceParser.ParseReferencesText(text, resourceId);
-                    }
-                }
-            }
-
+            // No fake mock files - all extraction happens live from Paratext engine
             return new List<ParallelReferenceEntry>();
-        }
-
-        public static string ReadEmbeddedResource(string fullResourceName)
-        {
-            var asm = typeof(ResourceCatalog).Assembly;
-            using (var stream = asm.GetManifestResourceStream(fullResourceName))
-            {
-                if (stream == null) return string.Empty;
-                using (var reader = new StreamReader(stream))
-                {
-                    return reader.ReadToEnd();
-                }
-            }
         }
     }
 }
