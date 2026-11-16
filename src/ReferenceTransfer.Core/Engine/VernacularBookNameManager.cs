@@ -75,6 +75,29 @@ namespace ReferenceTransfer.Core.Engine
 
             string bestLong = !string.IsNullOrEmpty(longName) ? longName!.Trim() : (!string.IsNullOrEmpty(shortName) ? shortName!.Trim() : (!string.IsNullOrEmpty(abbr) ? abbr!.Trim() : code));
             _codeToLong[code] = bestLong;
+
+            // Automatically register variants: dot-trimmed and Indic-digit normalized
+            foreach (var n in new[] { abbr, shortName, longName })
+            {
+                if (string.IsNullOrWhiteSpace(n)) continue;
+                string clean = n!.Trim();
+                RegisterBookAlias(code, clean);
+
+                if (clean.EndsWith("."))
+                {
+                    RegisterBookAlias(code, clean.TrimEnd('.').Trim());
+                }
+
+                string norm = NormalizeIndicDigitsToAscii(clean);
+                if (norm != clean)
+                {
+                    RegisterBookAlias(code, norm);
+                    if (norm.EndsWith("."))
+                    {
+                        RegisterBookAlias(code, norm.TrimEnd('.').Trim());
+                    }
+                }
+            }
         }
 
         public void RegisterBookAlias(string code, string? alias)
@@ -162,7 +185,8 @@ namespace ReferenceTransfer.Core.Engine
         }
 
         /// <summary>
-        /// Normalizes Indic / Devanagari / Tamil digits to ASCII Arabic numerals.
+        /// Normalizes Indic / Devanagari / Tamil / Kannada / Telugu / Malayalam / Bengali / etc.
+        /// digits to ASCII Arabic numerals (0-9).
         /// </summary>
         public static string NormalizeIndicDigitsToAscii(string text)
         {
@@ -170,14 +194,16 @@ namespace ReferenceTransfer.Core.Engine
             var sb = new StringBuilder(text.Length);
             foreach (char c in text)
             {
-                // Devanagari digits U+0966 to U+096F
-                if (c >= '\u0966' && c <= '\u096F')
-                    sb.Append((char)('0' + (c - '\u0966')));
-                // Tamil digits U+0BE6 to U+0BEF
-                else if (c >= '\u0BE6' && c <= '\u0BEF')
-                    sb.Append((char)('0' + (c - '\u0BE6')));
-                else
-                    sb.Append(c);
+                if (char.GetUnicodeCategory(c) == System.Globalization.UnicodeCategory.DecimalDigitNumber)
+                {
+                    int digit = (int)char.GetNumericValue(c);
+                    if (digit >= 0 && digit <= 9)
+                    {
+                        sb.Append((char)('0' + digit));
+                        continue;
+                    }
+                }
+                sb.Append(c);
             }
             return sb.ToString();
         }
@@ -258,7 +284,8 @@ namespace ReferenceTransfer.Core.Engine
                 // Match longer names before substrings (e.g. '1 इतिहास' before '1 इति')
                 foreach (var (sName, targetName) in allMappings.OrderByDescending(m => m.Name.Length))
                 {
-                    string pattern = $@"(?<!\p{{L}}){Regex.Escape(sName)}(?!\p{{L}})";
+                    string cleanBase = sName.TrimEnd('.');
+                    string pattern = $@"(?<!\p{{L}}){Regex.Escape(cleanBase)}\.?(?!\p{{L}})";
                     s = Regex.Replace(s, pattern, targetName, RegexOptions.IgnoreCase);
                 }
             }
@@ -335,7 +362,8 @@ namespace ReferenceTransfer.Core.Engine
                 // Longest names first
                 foreach (var (sName, code) in allMappings.OrderByDescending(m => m.Name.Length))
                 {
-                    string pattern = $@"(?<!\p{{L}}){Regex.Escape(sName)}(?!\p{{L}})";
+                    string cleanBase = sName.TrimEnd('.');
+                    string pattern = $@"(?<!\p{{L}}){Regex.Escape(cleanBase)}\.?(?!\p{{L}})";
                     s = Regex.Replace(s, pattern, code, RegexOptions.IgnoreCase);
                 }
             }
@@ -364,7 +392,8 @@ namespace ReferenceTransfer.Core.Engine
 
                 foreach (var (n, code) in allMappings.OrderByDescending(m => m.Name.Length))
                 {
-                    string pattern = $@"(?<!\p{{L}}){Regex.Escape(n)}(?!\p{{L}})";
+                    string cleanBase = n.TrimEnd('.');
+                    string pattern = $@"(?<!\p{{L}}){Regex.Escape(cleanBase)}\.?(?!\p{{L}})";
                     s = Regex.Replace(s, pattern, code, RegexOptions.IgnoreCase);
                 }
             }

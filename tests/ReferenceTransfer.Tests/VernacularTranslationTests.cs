@@ -218,5 +218,69 @@ namespace ReferenceTransfer.Tests
 
             Assert.Equal("(யாத்திராகமம் 34:18-26; உபாகமம் 16:1-17)", result);
         }
+
+        [Fact]
+        public void TranslateCitation_KannadaSourceWithIndicDigits_ToTamilTargetAndCanonical()
+        {
+            // Target: Tamil MTEP1
+            var targetMgr = new VernacularBookNameManager();
+            targetMgr.RegisterBook("1CH", "1நாளா", "1 நாளாகமம்", "1 நாளாகமம்");
+            targetMgr.RegisterBook("NUM", "எண்", "எண்ணாகமம்", "எண்ணாகமம்");
+            targetMgr.RegisterBook("EXO", "யாத்", "யாத்திராகமம்", "யாத்திராகமம்");
+            targetMgr.RegisterBook("DEU", "உபா", "உபாகமம்", "உபாகமம்");
+
+            // Source: Kannada KANCLBSI
+            var sourceMgr = new VernacularBookNameManager();
+            sourceMgr.RegisterBook("1CH", "೧ ಪೂರ್ವ.", "೧ ಪೂರ್ವಕಾಲವೃತ್ತಾಂತಗಳು", "ಮೊದಲನೆಯ ಪೂರ್ವಕಾಲವೃತ್ತಾಂತಗಳು");
+            sourceMgr.RegisterBook("NUM", "ಸಂಖ್ಯಾ.", "ಸಂಖ್ಯಾಕಾಂಡ", "ಸಂಖ್ಯಾಕಾಂಡ");
+            sourceMgr.RegisterBook("EXO", "ವಿಮೋ.", "ವಿಮೋಚನಕಾಂಡ", "ವಿಮೋಚನಕಾಂಡ");
+            sourceMgr.RegisterBook("DEU", "ಧರ್ಮೋ.", "ಧರ್ಮೋಪದೇಶಕಾಂಡ", "ಧರ್ಮೋಪದೇಶಕಾಂಡ");
+
+            var settings = new ProjectScriptureSettings
+            {
+                ChapterVerseSeparator = ":",
+                RangeIndicator = "-",
+                BookSequenceSeparator = "; "
+            };
+
+            // Test 1: Kannada 1 Chronicles with Kannada digit '೧' and trailing dot
+            string canon1 = targetMgr.ToCanonicalCitation("(೧ ಪೂರ್ವ. 1:1-4)", sourceMgr);
+            Assert.Equal("1CH 1:1-4", canon1);
+
+            string target1 = targetMgr.TranslateCitation(
+                "(೧ ಪೂರ್ವ. 1:1-4)",
+                useParentheses: true,
+                cleanPunctuation: true,
+                style: BookNameStyle.LongName,
+                settings: settings,
+                sourceMgr: sourceMgr);
+            Assert.Equal("(1 நாளாகமம் 1:1-4)", target1);
+
+            // Test 2: Kannada Numbers
+            string canon2 = targetMgr.ToCanonicalCitation("(ಸಂಖ್ಯಾ. 20:1-13)", sourceMgr);
+            Assert.Equal("NUM 20:1-13", canon2);
+
+            string target2 = targetMgr.TranslateCitation(
+                "(ಸಂಖ್ಯಾ. 20:1-13)",
+                useParentheses: true,
+                cleanPunctuation: true,
+                style: BookNameStyle.LongName,
+                settings: settings,
+                sourceMgr: sourceMgr);
+            Assert.Equal("(எண்ணாகமம் 20:1-13)", target2);
+
+            // Test 3: Multi-book Kannada reference (Exodus & Deuteronomy)
+            string canon3 = targetMgr.ToCanonicalCitation("(ವಿಮೋ. 34:18-26; ಧರ್ಮೋ. 16:1-17)", sourceMgr);
+            Assert.Equal("EXO 34:18-26; DEU 16:1-17", canon3);
+
+            string target3 = targetMgr.TranslateCitation(
+                "(ವಿಮೋ. 34:18-26; ಧರ್ಮೋ. 16:1-17)",
+                useParentheses: true,
+                cleanPunctuation: true,
+                style: BookNameStyle.LongName,
+                settings: settings,
+                sourceMgr: sourceMgr);
+            Assert.Equal("(யாத்திராகமம் 34:18-26; உபாகமம் 16:1-17)", target3);
+        }
     }
 }

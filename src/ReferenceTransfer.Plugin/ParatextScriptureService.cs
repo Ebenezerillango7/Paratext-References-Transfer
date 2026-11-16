@@ -362,7 +362,93 @@ namespace ReferenceTransfer.Plugin
             var mgr = LoadVernacularManager(project.ShortName);
             if (mgr.IsLoaded) return mgr;
 
-            // 2. Query Paratext's live IProject API (GetFormattedReference) for all books (works for resources & projects)
+            // 2. Read BookNames directly from project's underlying ScrText
+            try
+            {
+                var type = project.GetType();
+                var prop = type.GetProperty("ScrText", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                object? scrText = prop?.GetValue(project);
+                if (scrText == null)
+                {
+                    var field = type.GetField("scrText", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                    scrText = field?.GetValue(project);
+                }
+
+                if (scrText == null)
+                {
+                    var asm = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.GetName().Name == "ParatextData");
+                    var stcType = asm?.GetType("Paratext.Data.ScrTextCollection");
+                    var findMethod = stcType?.GetMethod("Find", BindingFlags.Public | BindingFlags.Static, null, new[] { typeof(string), typeof(bool), typeof(bool) }, null);
+                    scrText = findMethod?.Invoke(null, new object[] { project.ShortName, true, true });
+                }
+
+                if (scrText != null)
+                {
+                    var bnProp = scrText.GetType().GetProperty("BookNames", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                    object? bookNames = bnProp?.GetValue(scrText);
+                    if (bookNames != null)
+                    {
+                        var getItem = bookNames.GetType().GetMethod("get_Item", new[] { typeof(int) });
+                        var getAbbr = bookNames.GetType().GetMethod("GetAbbreviation", new[] { typeof(int), typeof(bool) });
+                        var getShort = bookNames.GetType().GetMethod("GetShortName", new[] { typeof(int) });
+                        var getLong = bookNames.GetType().GetMethod("GetLongName", new[] { typeof(int) });
+
+                        for (int b = 1; b <= 66; b++)
+                        {
+                            string code = CanonicalBookLists.All66Books[b - 1];
+                            string? abbr = null;
+                            string? shortName = null;
+                            string? longName = null;
+
+                            if (getItem != null)
+                            {
+                                try
+                                {
+                                    object? info = getItem.Invoke(bookNames, new object[] { b });
+                                    if (info != null)
+                                    {
+                                        var infoType = info.GetType();
+                                        code = (string?)infoType.GetProperty("BookCode")?.GetValue(info) ?? code;
+                                        abbr = (string?)infoType.GetProperty("Abbreviation")?.GetValue(info);
+                                        shortName = (string?)infoType.GetProperty("ShortName")?.GetValue(info);
+                                        longName = (string?)infoType.GetProperty("LongName")?.GetValue(info);
+
+                                        string? abbrLwc = (string?)infoType.GetProperty("AbbreviationLWC")?.GetValue(info);
+                                        string? shortLwc = (string?)infoType.GetProperty("ShortNameLWC")?.GetValue(info);
+
+                                        if (!string.IsNullOrEmpty(abbrLwc)) mgr.RegisterBookAlias(code, abbrLwc);
+                                        if (!string.IsNullOrEmpty(shortLwc)) mgr.RegisterBookAlias(code, shortLwc);
+                                    }
+                                }
+                                catch { }
+                            }
+
+                            if (string.IsNullOrEmpty(abbr) && getAbbr != null)
+                            {
+                                try { abbr = (string?)getAbbr.Invoke(bookNames, new object[] { b, false }); } catch { }
+                            }
+                            if (string.IsNullOrEmpty(shortName) && getShort != null)
+                            {
+                                try { shortName = (string?)getShort.Invoke(bookNames, new object[] { b }); } catch { }
+                            }
+                            if (string.IsNullOrEmpty(longName) && getLong != null)
+                            {
+                                try { longName = (string?)getLong.Invoke(bookNames, new object[] { b }); } catch { }
+                            }
+
+                            if (!string.IsNullOrEmpty(abbr) || !string.IsNullOrEmpty(shortName) || !string.IsNullOrEmpty(longName))
+                            {
+                                mgr.RegisterBook(code, abbr ?? string.Empty, shortName ?? string.Empty, longName ?? string.Empty);
+                            }
+                        }
+
+                        if (mgr.IsLoaded) return mgr;
+                    }
+                }
+            }
+            catch { }
+
+            // 3. Query Paratext's live IProject API (GetFormattedReference) for all books (works for resources & projects)
             try
             {
                 if (project is IProject p && p.Versification != null)
@@ -391,45 +477,6 @@ namespace ReferenceTransfer.Plugin
                             }
                         }
                         catch { }
-                    }
-                }
-            }
-            catch { }
-
-            // 3. Fallback / supplement: Read BookNames directly from underlying ScrText
-            try
-            {
-                var type = project.GetType();
-                var prop = type.GetProperty("ScrText", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                object? scrText = prop?.GetValue(project);
-                if (scrText == null)
-                {
-                    var field = type.GetField("scrText", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                    scrText = field?.GetValue(project);
-                }
-
-                if (scrText != null)
-                {
-                    var bnProp = scrText.GetType().GetProperty("BookNames", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                    object? bookNames = bnProp?.GetValue(scrText);
-                    if (bookNames != null)
-                    {
-                        var getAbbr = bookNames.GetType().GetMethod("GetAbbreviation", new[] { typeof(int) });
-                        var getShort = bookNames.GetType().GetMethod("GetShortName", new[] { typeof(int) });
-                        var getLong = bookNames.GetType().GetMethod("GetLongName", new[] { typeof(int) });
-
-                        for (int b = 1; b <= 66; b++)
-                        {
-                            string code = CanonicalBookLists.All66Books[b - 1];
-                            string? abbr = getAbbr?.Invoke(bookNames, new object[] { b }) as string;
-                            string? shortName = getShort?.Invoke(bookNames, new object[] { b }) as string;
-                            string? longName = getLong?.Invoke(bookNames, new object[] { b }) as string;
-
-                            if (!string.IsNullOrEmpty(abbr) || !string.IsNullOrEmpty(shortName) || !string.IsNullOrEmpty(longName))
-                            {
-                                mgr.RegisterBook(code, abbr ?? string.Empty, shortName ?? string.Empty, longName ?? string.Empty);
-                            }
-                        }
                     }
                 }
             }
@@ -473,9 +520,62 @@ namespace ReferenceTransfer.Plugin
             return settings;
         }
 
-        public ProjectScriptureSettings LoadProjectScriptureSettings(IProject project)
+        public ProjectScriptureSettings LoadProjectScriptureSettings(IReadOnlyProject? project)
         {
-            return LoadProjectScriptureSettings(project?.ShortName ?? string.Empty);
+            if (project == null) return new ProjectScriptureSettings();
+
+            // 1. Try disk-based Settings.xml
+            var settings = LoadProjectScriptureSettings(project.ShortName);
+            if (settings.IsLoaded) return settings;
+
+            // 2. Query scrText.Settings via reflection
+            try
+            {
+                var type = project.GetType();
+                var prop = type.GetProperty("ScrText", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                object? scrText = prop?.GetValue(project);
+                if (scrText == null)
+                {
+                    var field = type.GetField("scrText", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                    scrText = field?.GetValue(project);
+                }
+
+                if (scrText == null)
+                {
+                    var asm = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.GetName().Name == "ParatextData");
+                    var stcType = asm?.GetType("Paratext.Data.ScrTextCollection");
+                    var findMethod = stcType?.GetMethod("Find", BindingFlags.Public | BindingFlags.Static, null, new[] { typeof(string), typeof(bool), typeof(bool) }, null);
+                    scrText = findMethod?.Invoke(null, new object[] { project.ShortName, true, true });
+                }
+
+                if (scrText != null)
+                {
+                    var setProp = scrText.GetType().GetProperty("Settings", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                    object? ps = setProp?.GetValue(scrText);
+                    if (ps != null)
+                    {
+                        var psType = ps.GetType();
+                        string? cv = psType.GetProperty("ChapterVerseSeparator")?.GetValue(ps) as string;
+                        string? vr = psType.GetProperty("VerseRangeSeparator")?.GetValue(ps) as string;
+                        string? vs = psType.GetProperty("VerseSequenceSeparator")?.GetValue(ps) as string;
+                        string? bs = psType.GetProperty("BookSequenceSeparator")?.GetValue(ps) as string;
+                        string? cr = psType.GetProperty("ChapterRangeSeparator")?.GetValue(ps) as string;
+
+                        return new ProjectScriptureSettings
+                        {
+                            ChapterVerseSeparator = !string.IsNullOrEmpty(cv) ? cv! : ":",
+                            RangeIndicator = !string.IsNullOrEmpty(vr) ? vr! : "-",
+                            SequenceIndicator = !string.IsNullOrEmpty(vs) ? vs! : ",",
+                            BookSequenceSeparator = !string.IsNullOrEmpty(bs) ? bs! : "; ",
+                            ChapterRangeSeparator = !string.IsNullOrEmpty(cr) ? cr! : "-",
+                            IsLoaded = true
+                        };
+                    }
+                }
+            }
+            catch { }
+
+            return settings;
         }
 
         public string GetBookCode(int bookNum)

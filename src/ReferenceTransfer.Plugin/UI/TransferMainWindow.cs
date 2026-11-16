@@ -544,7 +544,7 @@ namespace ReferenceTransfer.Plugin.UI
             {
                 var srcProj = _service.FindProjectOrResource(sourceId);
                 _sourceVernacularMgr = _service.LoadVernacularManager(srcProj);
-                _sourceScriptureSettings = _service.LoadProjectScriptureSettings(sourceId);
+                _sourceScriptureSettings = _service.LoadProjectScriptureSettings(srcProj);
             }
             else
             {
@@ -733,7 +733,7 @@ namespace ReferenceTransfer.Plugin.UI
                 {
                     _loadedSourceReferences = _service.ExtractReferencesFromProject(srcProj, targetBookCodes);
                     _sourceVernacularMgr = _service.LoadVernacularManager(srcProj);
-                    _sourceScriptureSettings = _service.LoadProjectScriptureSettings(srcProj.ShortName);
+                    _sourceScriptureSettings = _service.LoadProjectScriptureSettings(srcProj);
                 }
                 else if (_cboSourceType.SelectedIndex == 2 && _loadedSourceReferences.Count == 0)
                 {
