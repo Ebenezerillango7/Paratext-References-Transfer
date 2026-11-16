@@ -20,6 +20,7 @@ namespace ReferenceTransfer.Core.Engine
         private readonly Dictionary<string, string> _codeToLong = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, List<string>> _codeToAliases = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, string> _englishNameToCode = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, string[]> _codeToEnglishAliases = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
 
         public bool IsLoaded => _codeToAbbr.Count > 0;
         public int BookCount => _codeToAbbr.Count;
@@ -142,25 +143,49 @@ namespace ReferenceTransfer.Core.Engine
             switch (style)
             {
                 case BookNameStyle.ShortName:
-                    if (_codeToShort.TryGetValue(bookCode, out string s) && !string.IsNullOrEmpty(s))
-                        return s;
+                    if (_codeToShort.TryGetValue(bookCode, out string s) && !string.IsNullOrWhiteSpace(s))
+                        return s.Trim();
                     break;
                 case BookNameStyle.LongName:
-                    if (_codeToLong.TryGetValue(bookCode, out string l) && !string.IsNullOrEmpty(l))
-                        return l;
+                    if (_codeToLong.TryGetValue(bookCode, out string l) && !string.IsNullOrWhiteSpace(l))
+                        return l.Trim();
                     break;
                 case BookNameStyle.Abbreviation:
                 default:
-                    if (_codeToAbbr.TryGetValue(bookCode, out string a) && !string.IsNullOrEmpty(a))
-                        return a;
+                    if (_codeToAbbr.TryGetValue(bookCode, out string a) && !string.IsNullOrWhiteSpace(a))
+                        return a.Trim();
                     break;
             }
 
-            if (_codeToAbbr.TryGetValue(bookCode, out string fbAbbr) && !string.IsNullOrEmpty(fbAbbr))
-                return fbAbbr;
-            if (_codeToShort.TryGetValue(bookCode, out string fbShort) && !string.IsNullOrEmpty(fbShort))
-                return fbShort;
+            if (_codeToAbbr.TryGetValue(bookCode, out string fbAbbr) && !string.IsNullOrWhiteSpace(fbAbbr))
+                return fbAbbr.Trim();
+            if (_codeToShort.TryGetValue(bookCode, out string fbShort) && !string.IsNullOrWhiteSpace(fbShort))
+                return fbShort.Trim();
+            if (_codeToLong.TryGetValue(bookCode, out string fbLong) && !string.IsNullOrWhiteSpace(fbLong))
+                return fbLong.Trim();
 
+            // Fallback: If Scripture Reference Setting is blank or missing, copy the standard English name!
+            return GetDefaultEnglishName(bookCode, style);
+        }
+
+        public string GetDefaultEnglishName(string bookCode, BookNameStyle style = BookNameStyle.Abbreviation)
+        {
+            if (string.IsNullOrWhiteSpace(bookCode)) return string.Empty;
+            bookCode = bookCode.Trim().ToUpperInvariant();
+
+            if (_codeToEnglishAliases.TryGetValue(bookCode, out var list) && list.Length > 0)
+            {
+                switch (style)
+                {
+                    case BookNameStyle.LongName:
+                        return list[0]; // e.g. "1 Chronicles", "Genesis"
+                    case BookNameStyle.ShortName:
+                        return list.Length > 1 ? list[1] : list[0]; // e.g. "1 Chron", "Gen"
+                    case BookNameStyle.Abbreviation:
+                    default:
+                        return list.Length > 2 ? list[2] : (list.Length > 1 ? list[1] : list[0]); // e.g. "1Chr", "Ge"
+                }
+            }
             return bookCode;
         }
 
@@ -476,6 +501,7 @@ namespace ReferenceTransfer.Core.Engine
             foreach (var kvp in aliases)
             {
                 string code = kvp.Key;
+                _codeToEnglishAliases[code] = kvp.Value;
                 _englishNameToCode[code] = code;
                 foreach (var alias in kvp.Value)
                 {

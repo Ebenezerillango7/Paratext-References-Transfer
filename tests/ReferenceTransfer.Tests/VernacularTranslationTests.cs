@@ -282,5 +282,42 @@ namespace ReferenceTransfer.Tests
                 sourceMgr: sourceMgr);
             Assert.Equal("(யாத்திராகமம் 34:18-26; உபாகமம் 16:1-17)", target3);
         }
+
+        [Fact]
+        public void TranslateCitation_WhenTargetSettingsBlank_FallsBackToEnglishNames()
+        {
+            // Target has NO vernacular names registered (blank Scripture Reference Settings)
+            var targetMgr = new VernacularBookNameManager();
+
+            // Source: Hindi KANCLBSI / HINOVBSI
+            var sourceMgr = new VernacularBookNameManager();
+            sourceMgr.RegisterBook("1CH", "1 इति", "1 इतिहास", "इतिहास");
+
+            var settings = new ProjectScriptureSettings
+            {
+                ChapterVerseSeparator = ":",
+                RangeIndicator = "-"
+            };
+
+            // Style: LongName -> should fall back to English "1 Chronicles 1:1-4"
+            string targetLong = targetMgr.TranslateCitation(
+                "(1 इति 1:1-4)",
+                useParentheses: true,
+                cleanPunctuation: true,
+                style: BookNameStyle.LongName,
+                settings: settings,
+                sourceMgr: sourceMgr);
+            Assert.Equal("(1 Chronicles 1:1-4)", targetLong);
+
+            // Style: ShortName -> should fall back to English "1 Chron 1:1-4"
+            string targetShort = targetMgr.TranslateCitation(
+                "(1 इति 1:1-4)",
+                useParentheses: true,
+                cleanPunctuation: true,
+                style: BookNameStyle.ShortName,
+                settings: settings,
+                sourceMgr: sourceMgr);
+            Assert.Equal("(1 Chron 1:1-4)", targetShort);
+        }
     }
 }

@@ -251,7 +251,7 @@ namespace ReferenceTransfer.Core.Engine
             return dict;
         }
 
-        private static void CheckExistingContext(string usfmText, int chapter, int verse, ReferenceTransferProposal proposal)
+        private void CheckExistingContext(string usfmText, int chapter, int verse, ReferenceTransferProposal proposal)
         {
             var lines = usfmText.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.None);
             int currentChapter = 0;
@@ -280,7 +280,9 @@ namespace ReferenceTransfer.Core.Engine
                             if (prev.StartsWith("\\r"))
                             {
                                 proposal.ExistingReference = prev.Substring(2).Trim();
-                                if (string.Equals(proposal.ExistingReference, proposal.ProposedReference, StringComparison.OrdinalIgnoreCase))
+                                string existingCanon = _vernacularMgr.ToCanonicalCitation(proposal.ExistingReference);
+                                if (string.Equals(proposal.ExistingReference, proposal.ProposedReference, StringComparison.OrdinalIgnoreCase) ||
+                                    (!string.IsNullOrEmpty(existingCanon) && string.Equals(existingCanon, proposal.CanonicalReference, StringComparison.OrdinalIgnoreCase)))
                                 {
                                     proposal.IsDuplicate = true;
                                     proposal.IsAccepted = false;
