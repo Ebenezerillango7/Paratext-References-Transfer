@@ -103,5 +103,58 @@ namespace ReferenceTransfer.Tests
                 Assert.Equal(ReferenceTransfer.Core.Models.BookNameStyle.ShortName, loaded.DefaultMarkerRStyle);
             }
         }
+
+        [Fact]
+        public void TranslateCitation_CrossLanguage_HindiSourceToTamilTarget_RefreshesWithSelectedStyle()
+        {
+            // Source: Hindi Scripture Reference Settings booknames (as configured in Paratext HINDI-BSI)
+            var sourceMgr = new VernacularBookNameManager();
+            sourceMgr.RegisterBook("1CH", "1 इति", "1 इतिहास", "इतिहास नामक पुस्तक - पहला भाग");
+            sourceMgr.RegisterBook("GEN", "उत्प", "उत्पत्ति", "उत्पत्ति");
+
+            // Target: Tamil Scripture Reference Settings booknames (as configured in Paratext MTEP1)
+            var targetMgr = new VernacularBookNameManager();
+            targetMgr.RegisterBook("1CH", "1நாளா", "1 நாளாகமம்", "1 நாளாகமம்");
+            targetMgr.RegisterBook("GEN", "ஆதி", "ஆதியாகமம்", "ஆதியாகமம்");
+
+            var settings = new ReferenceTransfer.Core.Models.ProjectScriptureSettings
+            {
+                ChapterVerseSeparator = ":",
+                RangeIndicator = "-"
+            };
+
+            // Test 1: Translating Hindi citation to Tamil Abbreviation
+            string abbrResult = targetMgr.TranslateCitation(
+                "(1 इतिहास 1:1-4)", 
+                useParentheses: true, 
+                cleanPunctuation: true, 
+                style: ReferenceTransfer.Core.Models.BookNameStyle.Abbreviation, 
+                settings: settings, 
+                sourceMgr: sourceMgr);
+
+            Assert.Equal("(1நாளா 1:1-4)", abbrResult);
+
+            // Test 2: Switching style to Short Name
+            string shortResult = targetMgr.TranslateCitation(
+                "(1 इतिहास 1:1-4)", 
+                useParentheses: true, 
+                cleanPunctuation: true, 
+                style: ReferenceTransfer.Core.Models.BookNameStyle.ShortName, 
+                settings: settings, 
+                sourceMgr: sourceMgr);
+
+            Assert.Equal("(1 நாளாகமம் 1:1-4)", shortResult);
+
+            // Test 3: Translating Hindi Abbreviation citation to Tamil Long Name
+            string longResult = targetMgr.TranslateCitation(
+                "(1 इति 1:1-4)", 
+                useParentheses: true, 
+                cleanPunctuation: true, 
+                style: ReferenceTransfer.Core.Models.BookNameStyle.LongName, 
+                settings: settings, 
+                sourceMgr: sourceMgr);
+
+            Assert.Equal("(1 நாளாகமம் 1:1-4)", longResult);
+        }
     }
 }

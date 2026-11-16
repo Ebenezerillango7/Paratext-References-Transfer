@@ -13,12 +13,17 @@ namespace ReferenceTransfer.Core.Engine
     public class ReferenceTransferEngine
     {
         private readonly VernacularBookNameManager _vernacularMgr;
+        private readonly VernacularBookNameManager? _sourceVernacularMgr;
         private readonly TransferOptions _options;
 
-        public ReferenceTransferEngine(VernacularBookNameManager vernacularMgr, TransferOptions? options = null)
+        public ReferenceTransferEngine(
+            VernacularBookNameManager vernacularMgr, 
+            TransferOptions? options = null,
+            VernacularBookNameManager? sourceVernacularMgr = null)
         {
             _vernacularMgr = vernacularMgr ?? new VernacularBookNameManager();
             _options = options ?? new TransferOptions();
+            _sourceVernacularMgr = sourceVernacularMgr;
         }
 
         /// <summary>
@@ -52,7 +57,13 @@ namespace ReferenceTransfer.Core.Engine
                     Chapter = r.Chapter,
                     Verse = r.TargetVerse,
                     SourceReference = r.RawReference,
-                    ProposedReference = _vernacularMgr.TranslateCitation(r.RawReference, _options.UseParentheses, _options.CleanTrailingPunctuation, _options.NameStyle, _options.ScriptureSettings)
+                    ProposedReference = _vernacularMgr.TranslateCitation(
+                        r.RawReference, 
+                        _options.UseParentheses, 
+                        _options.CleanTrailingPunctuation, 
+                        _options.NameStyle, 
+                        _options.ScriptureSettings,
+                        _sourceVernacularMgr)
                 };
 
                 // Check chapter existence

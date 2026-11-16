@@ -45,7 +45,9 @@ namespace ReferenceTransfer.Plugin.UI
 
         private List<ReferenceTransferProposal> _currentProposals = new List<ReferenceTransferProposal>();
         private VernacularBookNameManager _vernacularMgr = new VernacularBookNameManager();
+        private VernacularBookNameManager _sourceVernacularMgr = new VernacularBookNameManager();
         private ProjectScriptureSettings _scriptureSettings = new ProjectScriptureSettings();
+        private ProjectScriptureSettings _sourceScriptureSettings = new ProjectScriptureSettings();
         private List<ParallelReferenceEntry> _loadedSourceReferences = new List<ParallelReferenceEntry>();
 
         public TransferMainWindow(IPluginHost host, IParatextChildState? childState, IPluginObject pluginObj)
@@ -326,10 +328,29 @@ namespace ReferenceTransfer.Plugin.UI
             for (int i = 0; i < _currentProposals.Count; i++)
             {
                 var p = _currentProposals[i];
-                p.ProposedReference = _vernacularMgr.TranslateCitation(p.SourceReference, useParens, cleanPunct, style, _scriptureSettings);
+                p.ProposedReference = _vernacularMgr.TranslateCitation(
+                    p.SourceReference, 
+                    useParens, 
+                    cleanPunct, 
+                    style, 
+                    _scriptureSettings,
+                    _sourceVernacularMgr);
+
                 if (i < _grid.Rows.Count)
                 {
                     _grid.Rows[i].Cells["ColProposed"].Value = p.ProposedReference;
+
+                    // Also refresh source display
+                    if (_sourceVernacularMgr != null && _sourceVernacularMgr.IsLoaded)
+                    {
+                        string sourceDisplay = _sourceVernacularMgr.TranslateCitation(
+                            p.SourceReference,
+                            useParens,
+                            cleanPunct,
+                            _sourceScriptureSettings.DefaultMarkerRStyle,
+                            _sourceScriptureSettings);
+                        _grid.Rows[i].Cells["ColSource"].Value = sourceDisplay;
+                    }
                 }
             }
         }
@@ -421,8 +442,10 @@ namespace ReferenceTransfer.Plugin.UI
 
         private void LoadSelectedSource()
         {
+            string sourceId = string.Empty;
             if (_cboSourceType.SelectedIndex == 0 && _cboSourceVal.SelectedItem is ResourceItemInfo res)
             {
+                sourceId = res.Id;
                 if (res.HasReferences)
                 {
                     _loadedSourceReferences = ResourceCatalog.LoadResource(res.Id);
@@ -436,8 +459,20 @@ namespace ReferenceTransfer.Plugin.UI
             }
             else if (_cboSourceType.SelectedIndex == 1 && _cboSourceVal.SelectedItem != null)
             {
+                sourceId = _cboSourceVal.SelectedItem.ToString() ?? string.Empty;
                 _loadedSourceReferences.Clear();
-                _lblStatus.Text = $"Source project selected: {_cboSourceVal.SelectedItem}. References will be extracted on Scan.";
+                _lblStatus.Text = $"Source project selected: {sourceId}. References will be extracted on Scan.";
+            }
+
+            if (!string.IsNullOrEmpty(sourceId))
+            {
+                _sourceVernacularMgr = _service.LoadVernacularManager(sourceId);
+                _sourceScriptureSettings = _service.LoadProjectScriptureSettings(sourceId);
+            }
+            else
+            {
+                _sourceVernacularMgr = new VernacularBookNameManager();
+                _sourceScriptureSettings = new ProjectScriptureSettings();
             }
         }
 
@@ -571,7 +606,7 @@ namespace ReferenceTransfer.Plugin.UI
                 int bookNum = _service.GetBookNum(code);
                 if (bookNum <= 0) continue;
 
-                var bookProposals = _service.ScanBook(proj, bookNum, _loadedSourceReferences, _vernacularMgr, options);
+                var bookProposals = _service.ScanBook(proj, bookNum, _loadedSourceReferences, _vernacularMgr, options, _sourceVernacularMgr);
                 _currentProposals.AddRange(bookProposals);
             }
 
@@ -584,17 +619,31 @@ namespace ReferenceTransfer.Plugin.UI
         {
             _grid.Rows.Clear();
 
+            bool useParens = _chkParentheses.Checked;
+            bool cleanPunct = _chkCleanPunct.Checked;
+
             foreach (var p in _currentProposals)
             {
                 int rowIdx = _grid.Rows.Add();
                 var row = _grid.Rows[rowIdx];
                 row.Tag = p;
 
+                string sourceDisplay = p.SourceReference;
+                if (_sourceVernacularMgr != null && _sourceVernacularMgr.IsLoaded)
+                {
+                    sourceDisplay = _sourceVernacularMgr.TranslateCitation(
+                        p.SourceReference,
+                        useParens,
+                        cleanPunct,
+                        _sourceScriptureSettings.DefaultMarkerRStyle,
+                        _sourceScriptureSettings);
+                }
+
                 row.Cells["ColApply"].Value = p.IsAccepted;
                 row.Cells["ColVerse"].Value = p.ReferenceLocation;
                 row.Cells["ColType"].Value = p.ActionType;
                 row.Cells["ColProposed"].Value = p.ProposedReference;
-                row.Cells["ColSource"].Value = p.SourceReference;
+                row.Cells["ColSource"].Value = sourceDisplay;
                 row.Cells["ColHeading"].Value = p.ExistingHeading;
                 row.Cells["ColWarning"].Value = p.Warning;
 

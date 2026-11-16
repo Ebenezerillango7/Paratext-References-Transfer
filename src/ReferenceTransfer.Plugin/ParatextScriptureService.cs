@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Paratext.Data;
 using Paratext.PluginInterfaces;
 using ReferenceTransfer.Core.Engine;
 using ReferenceTransfer.Core.Models;
@@ -156,54 +157,49 @@ namespace ReferenceTransfer.Plugin
             return entries;
         }
 
-        public VernacularBookNameManager LoadVernacularManager(IProject project)
+        public VernacularBookNameManager LoadVernacularManager(string id)
         {
             var mgr = new VernacularBookNameManager();
-            if (project == null) return mgr;
+            if (string.IsNullOrWhiteSpace(id)) return mgr;
 
+            // 1. Try Paratext native live ScrTextCollection
             try
             {
-                string? xmlPath = null;
-                string[] baseDirs = {
-                    @"D:\Transdata\My Paratext 9 Projects",
-                    @"C:\My Paratext 9 Projects"
-                };
+                var scrText = ScrTextCollection.Find(id) 
+                           ?? ScrTextCollection.FindProjectWithDifferentCase(id);
 
-                foreach (var dir in baseDirs)
+                if (scrText == null)
                 {
-                    string candidate = Path.Combine(dir, project.ShortName, "BookNames.xml");
-                    if (File.Exists(candidate))
+                    try
                     {
-                        xmlPath = candidate;
-                        break;
+                        scrText = ScrTextCollection.ScrTexts(IncludeProjects.Everything)
+                            .FirstOrDefault(st => string.Equals(st.Name, id, StringComparison.OrdinalIgnoreCase));
                     }
+                    catch { }
                 }
 
-                if (string.IsNullOrEmpty(xmlPath))
+                if (scrText != null && scrText.BookNames != null)
                 {
-                    string fallback = @"D:\Projects\Paratext References Transfer\IRVTamBooknames.xml";
-                    if (File.Exists(fallback))
-                        xmlPath = fallback;
-                }
-
-                if (!string.IsNullOrEmpty(xmlPath) && File.Exists(xmlPath))
-                {
-                    mgr.LoadFromXml(xmlPath);
+                    foreach (var b in scrText.BookNames.GetBookNames())
+                    {
+                        if (!string.IsNullOrEmpty(b.BookCode))
+                        {
+                            mgr.RegisterBook(b.BookCode, b.Abbreviation, b.ShortName, b.LongName);
+                        }
+                    }
+                    if (mgr.IsLoaded)
+                    {
+                        _host.Log(this as IPluginObject, "Loaded BookNames for {0} via ScrTextCollection ({1} books)", new object[] { id, mgr.BookCount });
+                        return mgr;
+                    }
                 }
             }
             catch (Exception ex)
             {
-                _host.Log(this as IPluginObject, "Failed to load BookNames.xml: {0}", new object[] { ex.Message });
+                _host.Log(this as IPluginObject, "ScrTextCollection BookNames lookup for {0}: {1}", new object[] { id, ex.Message });
             }
 
-            return mgr;
-        }
-
-        public ProjectScriptureSettings LoadProjectScriptureSettings(IProject project)
-        {
-            var settings = new ProjectScriptureSettings();
-            if (project == null) return settings;
-
+            // 2. Fallback to scanning disk XML files
             try
             {
                 string[] baseDirs = {
@@ -213,19 +209,106 @@ namespace ReferenceTransfer.Plugin
 
                 foreach (var dir in baseDirs)
                 {
-                    string candidate = Path.Combine(dir, project.ShortName, "Settings.xml");
+                    string candidate = Path.Combine(dir, id, "BookNames.xml");
+                    if (File.Exists(candidate))
+                    {
+                        mgr.LoadFromXml(candidate);
+                        if (mgr.IsLoaded) return mgr;
+                    }
+                }
+            }
+            catch { }
+
+            return mgr;
+        }
+
+        public VernacularBookNameManager LoadVernacularManager(IProject project)
+        {
+            return LoadVernacularManager(project?.ShortName ?? string.Empty);
+        }
+
+        public ProjectScriptureSettings LoadProjectScriptureSettings(string id)
+        {
+            var settings = new ProjectScriptureSettings();
+            if (string.IsNullOrWhiteSpace(id)) return settings;
+
+            // 1. Try Paratext native live ScrTextCollection
+            try
+            {
+                var scrText = ScrTextCollection.Find(id) 
+                           ?? ScrTextCollection.FindProjectWithDifferentCase(id);
+
+                if (scrText == null)
+                {
+                    try
+                    {
+                        scrText = ScrTextCollection.ScrTexts(IncludeProjects.Everything)
+                            .FirstOrDefault(st => string.Equals(st.Name, id, StringComparison.OrdinalIgnoreCase));
+                    }
+                    catch { }
+                }
+
+                if (scrText != null && scrText.Settings != null)
+                {
+                    var s = scrText.Settings;
+                    settings.IsLoaded = true;
+                    settings.ChapterVerseSeparator = s.ChapterVerseSeparator ?? ":";
+                    settings.RangeIndicator = s.VerseRangeSeparator ?? "-";
+                    settings.SequenceIndicator = s.VerseSequenceSeparator ?? ",";
+                    settings.BookSequenceSeparator = s.BookSequenceSeparator ?? "; ";
+                    settings.ChapterRangeSeparator = s.ChapterRangeSeparator ?? "—";
+                    settings.NoSpaceBetweenBookAndChapter = s.NoSpaceBetweenBookAndChapter;
+                    settings.DefaultMarkerRStyle = MapBookNameSource(s.RSource);
+                    return settings;
+                }
+            }
+            catch (Exception ex)
+            {
+                _host.Log(this as IPluginObject, "ScrTextCollection Settings lookup for {0}: {1}", new object[] { id, ex.Message });
+            }
+
+            // 2. Fallback to scanning disk XML files
+            try
+            {
+                string[] baseDirs = {
+                    @"D:\Transdata\My Paratext 9 Projects",
+                    @"C:\My Paratext 9 Projects"
+                };
+
+                foreach (var dir in baseDirs)
+                {
+                    string candidate = Path.Combine(dir, id, "Settings.xml");
                     if (File.Exists(candidate))
                     {
                         return ProjectScriptureSettings.LoadFromSettingsXml(candidate);
                     }
                 }
             }
-            catch (Exception ex)
-            {
-                _host.Log(this as IPluginObject, "Failed to load Settings.xml: {0}", new object[] { ex.Message });
-            }
+            catch { }
 
             return settings;
+        }
+
+        public ProjectScriptureSettings LoadProjectScriptureSettings(IProject project)
+        {
+            return LoadProjectScriptureSettings(project?.ShortName ?? string.Empty);
+        }
+
+        private static BookNameStyle MapBookNameSource(Paratext.Data.ProjectSettingsAccess.BookNameSource src)
+        {
+            switch (src)
+            {
+                case Paratext.Data.ProjectSettingsAccess.BookNameSource.ShortName:
+                case Paratext.Data.ProjectSettingsAccess.BookNameSource.ShortNameLWC:
+                    return BookNameStyle.ShortName;
+                case Paratext.Data.ProjectSettingsAccess.BookNameSource.LongName:
+                case Paratext.Data.ProjectSettingsAccess.BookNameSource.LongNameLWC:
+                    return BookNameStyle.LongName;
+                case Paratext.Data.ProjectSettingsAccess.BookNameSource.Abbreviation:
+                case Paratext.Data.ProjectSettingsAccess.BookNameSource.AbbreviationLWC:
+                default:
+                    return BookNameStyle.Abbreviation;
+            }
         }
 
         public string GetBookCode(int bookNum)
@@ -249,6 +332,7 @@ namespace ReferenceTransfer.Plugin
             List<ParallelReferenceEntry> sourceReferences,
             VernacularBookNameManager vernacularMgr,
             TransferOptions options,
+            VernacularBookNameManager? sourceVernacularMgr = null,
             Action<int, int>? progressCallback = null)
         {
             var proposals = new List<ReferenceTransferProposal>();
@@ -256,7 +340,7 @@ namespace ReferenceTransfer.Plugin
                 return proposals;
 
             string bookCode = GetBookCode(bookNum);
-            var engine = new ReferenceTransferEngine(vernacularMgr, options);
+            var engine = new ReferenceTransferEngine(vernacularMgr, options, sourceVernacularMgr);
 
             int lastChapter = project.Versification.GetLastChapter(bookNum);
             var sbUsfm = new StringBuilder();

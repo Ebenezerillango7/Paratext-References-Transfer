@@ -50,20 +50,39 @@ namespace ReferenceTransfer.Core.Engine
                     string shortName = bookElem.Attribute("short")?.Value?.Trim() ?? string.Empty;
                     string longName = bookElem.Attribute("long")?.Value?.Trim() ?? string.Empty;
 
-                    string bestAbbr = !string.IsNullOrEmpty(abbr) ? abbr : (!string.IsNullOrEmpty(shortName) ? shortName : code);
-                    _codeToAbbr[code] = bestAbbr;
-
-                    string bestShort = !string.IsNullOrEmpty(shortName) ? shortName : (!string.IsNullOrEmpty(abbr) ? abbr : code);
-                    _codeToShort[code] = bestShort;
-
-                    string bestLong = !string.IsNullOrEmpty(longName) ? longName : (!string.IsNullOrEmpty(shortName) ? shortName : (!string.IsNullOrEmpty(abbr) ? abbr : code));
-                    _codeToLong[code] = bestLong;
+                    RegisterBook(code, abbr, shortName, longName);
                 }
             }
             catch
             {
                 // Graceful fallback to default aliases if XML is invalid
             }
+        }
+
+        public void RegisterBook(string code, string? abbr, string? shortName, string? longName)
+        {
+            if (string.IsNullOrWhiteSpace(code)) return;
+            code = code.Trim().ToUpperInvariant();
+
+            string bestAbbr = !string.IsNullOrEmpty(abbr) ? abbr!.Trim() : (!string.IsNullOrEmpty(shortName) ? shortName!.Trim() : code);
+            _codeToAbbr[code] = bestAbbr;
+
+            string bestShort = !string.IsNullOrEmpty(shortName) ? shortName!.Trim() : (!string.IsNullOrEmpty(abbr) ? abbr!.Trim() : code);
+            _codeToShort[code] = bestShort;
+
+            string bestLong = !string.IsNullOrEmpty(longName) ? longName!.Trim() : (!string.IsNullOrEmpty(shortName) ? shortName!.Trim() : (!string.IsNullOrEmpty(abbr) ? abbr!.Trim() : code));
+            _codeToLong[code] = bestLong;
+        }
+
+        public IEnumerable<string> GetAllBookCodes() => _codeToAbbr.Keys;
+
+        public List<string> GetAllNamesForCode(string bookCode)
+        {
+            var list = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            if (_codeToLong.TryGetValue(bookCode, out string l) && !string.IsNullOrEmpty(l)) list.Add(l);
+            if (_codeToShort.TryGetValue(bookCode, out string s) && !string.IsNullOrEmpty(s)) list.Add(s);
+            if (_codeToAbbr.TryGetValue(bookCode, out string a) && !string.IsNullOrEmpty(a)) list.Add(a);
+            return new List<string>(list);
         }
 
         public string GetVernacularName(string bookCode, BookNameStyle style = BookNameStyle.Abbreviation)
@@ -114,13 +133,15 @@ namespace ReferenceTransfer.Core.Engine
         /// <summary>
         /// Translates a full citation reference string into target vernacular book names (Abbreviation, Short Name, or Long Name)
         /// using the target project's Scripture Reference settings (chapter/verse separator, range indicator, etc.).
+        /// Supports optional source manager to convert source vernacular names (e.g. Hindi -> Tamil).
         /// </summary>
         public string TranslateCitation(
             string rawRef, 
             bool useParentheses = true, 
             bool cleanPunctuation = true, 
             BookNameStyle style = BookNameStyle.Abbreviation,
-            ProjectScriptureSettings? settings = null)
+            ProjectScriptureSettings? settings = null,
+            VernacularBookNameManager? sourceMgr = null)
         {
             if (string.IsNullOrWhiteSpace(rawRef))
                 return string.Empty;
@@ -160,7 +181,26 @@ namespace ReferenceTransfer.Core.Engine
             // 5. Standardize book sequence separator (e.g. '; ' or ';')
             s = Regex.Replace(s, @";\s*", settings.BookSequenceSeparator);
 
-            // 6. Replace each English book name with target vernacular name according to chosen style
+            // 6. If source manager is supplied and loaded with vernacular names (e.g. Hindi),
+            // replace source vernacular names with target vernacular names
+            if (sourceMgr != null && sourceMgr.IsLoaded)
+            {
+                foreach (var code in sourceMgr.GetAllBookCodes())
+                {
+                    string targetName = GetVernacularName(code, style);
+                    if (string.IsNullOrEmpty(targetName)) continue;
+
+                    var sourceNames = sourceMgr.GetAllNamesForCode(code);
+                    foreach (var sName in sourceNames)
+                    {
+                        if (string.IsNullOrWhiteSpace(sName) || sName == targetName) continue;
+                        string pattern = $@"(?<!\p{{L}}){Regex.Escape(sName)}(?!\p{{L}})";
+                        s = Regex.Replace(s, pattern, targetName, RegexOptions.IgnoreCase);
+                    }
+                }
+            }
+
+            // 7. Replace each English book name with target vernacular name according to chosen style
             foreach (var kvp in _englishNameToCode)
             {
                 string engName = kvp.Key;
@@ -175,7 +215,7 @@ namespace ReferenceTransfer.Core.Engine
                 s = Regex.Replace(s, pattern, vernacular, RegexOptions.IgnoreCase);
             }
 
-            // 7. Handle spacing between book and chapter
+            // 8. Handle spacing between book and chapter
             if (settings.NoSpaceBetweenBookAndChapter)
             {
                 s = Regex.Replace(s, @"(\p{L})\s+(\d+)", "$1$2");

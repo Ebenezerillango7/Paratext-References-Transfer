@@ -33,6 +33,7 @@ namespace ReferenceTransfer.Core.Engine
                 ["ESVUS16"] = ("ReferenceTransfer.Core.ResourceData.ESVUS16_References.txt", 600),
                 ["ESV"] = ("ReferenceTransfer.Core.ResourceData.ESVUS16_References.txt", 600),
                 ["HINOVBSI"] = ("ReferenceTransfer.Core.ResourceData.HINOVBSI_References.txt", 272),
+                ["HINDI-BSI"] = ("ReferenceTransfer.Core.ResourceData.HINOVBSI_References.txt", 272),
                 ["GNTD"] = ("ReferenceTransfer.Core.ResourceData.GNTD_References.txt", 272),
                 ["IRVHIN"] = ("ReferenceTransfer.Core.ResourceData.IRVHin_References.txt", 272),
             };
@@ -44,6 +45,7 @@ namespace ReferenceTransfer.Core.Engine
                 ["ESVUS16"] = ("English Standard Version 2016", "English"),
                 ["ESVUS11"] = ("English Standard Version 2011", "English"),
                 ["HINOVBSI"] = ("Hindi OV (Re-edited) Bible (BSI)", "Hindi"),
+                ["HINDI-BSI"] = ("Hindi BSI Bible", "Hindi"),
                 ["HINCLBSI"] = ("Hindi Common Language Bible (BSI)", "Hindi"),
                 ["GNTD"] = ("Good News Translation US", "English"),
                 ["GNBDC"] = ("Good News Bible (British Version) 2017", "English"),
