@@ -138,6 +138,18 @@ namespace ReferenceTransfer.Core.Engine
             return list.OrderByDescending(x => x.Length).ToList();
         }
 
+        /// <summary>
+        /// Checks whether a book code has at least one vernacular name (abbr, short, or long) mapped in this manager.
+        /// </summary>
+        public bool HasVernacularMapping(string bookCode)
+        {
+            if (string.IsNullOrWhiteSpace(bookCode)) return false;
+            bookCode = bookCode.Trim().ToUpperInvariant();
+            return (_codeToAbbr.TryGetValue(bookCode, out string a) && !string.IsNullOrWhiteSpace(a)) ||
+                   (_codeToShort.TryGetValue(bookCode, out string s) && !string.IsNullOrWhiteSpace(s)) ||
+                   (_codeToLong.TryGetValue(bookCode, out string l) && !string.IsNullOrWhiteSpace(l));
+        }
+
         public string GetVernacularName(string bookCode, BookNameStyle style = BookNameStyle.Abbreviation)
         {
             switch (style)

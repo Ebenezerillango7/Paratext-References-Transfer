@@ -61,16 +61,27 @@ namespace ReferenceTransfer.Core.Models
 
         public bool HasWarning => !string.IsNullOrEmpty(Warning);
 
-        public string ActionType
+        /// <summary>
+        /// Whether the target project lacked vernacular mapping for this book and English was used as fallback
+        /// </summary>
+        public bool IsEnglishFallback { get; set; }
+
+        /// <summary>
+        /// Unified status string for display in the grid (e.g. "New", "New  ➕ \s", "Replaces Existing", "Duplicate (Skipped)")
+        /// </summary>
+        public string Status
         {
             get
             {
-                if (IsDuplicate) return "Duplicate (Skip)";
-                if (HasWarning) return "Warning (Check)";
-                if (!string.IsNullOrEmpty(ExistingReference)) return "Update Reference";
-                if (NeedsHeading) return "Insert Heading + Reference";
-                return "Insert Reference";
+                if (IsDuplicate) return "Duplicate (Skipped)";
+                if (HasWarning) return Warning;
+                if (!string.IsNullOrEmpty(ExistingReference)) return "Replaces Existing";
+                if (IsEnglishFallback) return NeedsHeading ? "English Fallback  ➕ \\s" : "English Fallback";
+                if (NeedsHeading) return "New  ➕ \\s";
+                return "New";
             }
         }
+
+        public string ActionType => Status;
     }
 }

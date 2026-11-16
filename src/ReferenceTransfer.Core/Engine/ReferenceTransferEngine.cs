@@ -67,6 +67,21 @@ namespace ReferenceTransfer.Core.Engine
                         _sourceVernacularMgr)
                 };
 
+                // Check if target project had blank scripture settings for any book in this reference (English fallback used)
+                if (!string.IsNullOrEmpty(proposal.CanonicalReference))
+                {
+                    var bookMatches = Regex.Matches(proposal.CanonicalReference, @"\b([1-3]?[A-Z]{3})\b");
+                    foreach (Match m in bookMatches)
+                    {
+                        string cCode = m.Groups[1].Value;
+                        if (!_vernacularMgr.HasVernacularMapping(cCode))
+                        {
+                            proposal.IsEnglishFallback = true;
+                            break;
+                        }
+                    }
+                }
+
                 // Check chapter existence
                 if (!availableVerses.ContainsKey(r.Chapter))
                 {

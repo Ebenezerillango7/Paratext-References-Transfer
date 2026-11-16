@@ -358,17 +358,19 @@ namespace ReferenceTransfer.Plugin.UI
             {
                 Name = "ColApply",
                 HeaderText = "Apply",
-                Width = 65
+                Width = 60
             };
             _grid.Columns.Add(chkCol);
 
-            _grid.Columns.Add(new DataGridViewTextBoxColumn { Name = "ColVerse", HeaderText = "Target Verse", Width = 105, ReadOnly = true });
-            _grid.Columns.Add(new DataGridViewTextBoxColumn { Name = "ColCanonical", HeaderText = "Canonical Ref", Width = 125, ReadOnly = true });
-            _grid.Columns.Add(new DataGridViewTextBoxColumn { Name = "ColSource", HeaderText = "Source (Original)", Width = 230, ReadOnly = true });
-            _grid.Columns.Add(new DataGridViewTextBoxColumn { Name = "ColProposed", HeaderText = "Proposed (Target)", Width = 260, ReadOnly = true });
-            _grid.Columns.Add(new DataGridViewTextBoxColumn { Name = "ColType", HeaderText = "Action", Width = 150, ReadOnly = true });
-            _grid.Columns.Add(new DataGridViewTextBoxColumn { Name = "ColHeading", HeaderText = "Section Heading", Width = 200, ReadOnly = true });
-            _grid.Columns.Add(new DataGridViewTextBoxColumn { Name = "ColWarning", HeaderText = "Notes / Warning", Width = 180, ReadOnly = true });
+            _grid.Columns.Add(new DataGridViewTextBoxColumn { Name = "ColVerse", HeaderText = "Target Verse", Width = 110, ReadOnly = true });
+            _grid.Columns.Add(new DataGridViewTextBoxColumn { Name = "ColCanonical", HeaderText = "Canonical Ref", Width = 130, ReadOnly = true });
+            _grid.Columns.Add(new DataGridViewTextBoxColumn { Name = "ColSource", HeaderText = "Source (Original)", Width = 250, ReadOnly = true });
+            _grid.Columns.Add(new DataGridViewTextBoxColumn { Name = "ColProposed", HeaderText = "Proposed (Target)", Width = 280, ReadOnly = true });
+            _grid.Columns.Add(new DataGridViewTextBoxColumn { Name = "ColStatus", HeaderText = "Status", Width = 210, ReadOnly = true });
+
+            _grid.ShowCellToolTips = true;
+            _grid.CellPainting += Grid_CellPainting;
+            _grid.CellValueChanged += Grid_CellValueChanged;
         }
 
         private BookNameStyle GetSelectedNameStyle()
@@ -415,6 +417,8 @@ namespace ReferenceTransfer.Plugin.UI
                     _grid.Rows[i].Cells["ColCanonical"].Value = p.CanonicalReference;
                     _grid.Rows[i].Cells["ColProposed"].Value = p.ProposedReference;
                     _grid.Rows[i].Cells["ColSource"].Value = FormatDisplayReference(p.SourceReference, useParens, cleanPunct);
+                    _grid.Rows[i].Cells["ColStatus"].Value = p.Status;
+                    _grid.Rows[i].Cells["ColStatus"].ToolTipText = GetStatusToolTip(p);
                 }
             }
 
@@ -833,22 +837,132 @@ namespace ReferenceTransfer.Plugin.UI
                 row.Cells["ColCanonical"].Value = p.CanonicalReference;
                 row.Cells["ColSource"].Value = sourceDisplay;
                 row.Cells["ColProposed"].Value = p.ProposedReference;
-                row.Cells["ColType"].Value = p.ActionType;
-                row.Cells["ColHeading"].Value = p.ExistingHeading;
-                row.Cells["ColWarning"].Value = p.Warning;
+                row.Cells["ColStatus"].Value = p.Status;
+                row.Cells["ColStatus"].ToolTipText = GetStatusToolTip(p);
 
                 if (p.IsDuplicate)
                 {
-                    row.DefaultCellStyle.BackColor = Color.FromArgb(245, 245, 245);
+                    row.DefaultCellStyle.BackColor = Color.FromArgb(248, 249, 250);
                     row.DefaultCellStyle.ForeColor = Color.Gray;
                 }
                 else if (p.HasWarning)
                 {
-                    row.DefaultCellStyle.BackColor = Color.FromArgb(255, 248, 230); // Amber warning
+                    row.DefaultCellStyle.BackColor = Color.FromArgb(255, 248, 235); // Amber warning
                 }
             }
+        }
 
-            _grid.CellValueChanged += Grid_CellValueChanged;
+        private static string GetStatusToolTip(ReferenceTransferProposal p)
+        {
+            if (p.IsDuplicate)
+                return "Identical reference already exists in target text. Skipped to prevent duplicate markers.";
+            if (p.HasWarning)
+                return p.Warning;
+            if (!string.IsNullOrEmpty(p.ExistingReference))
+                return $"Replaces existing reference '{p.ExistingReference}' in target text.";
+            if (p.IsEnglishFallback)
+                return p.NeedsHeading 
+                    ? "Target project Scripture Reference Settings is blank for this book (standard English name used). Also inserting '\\s Insert Heading'."
+                    : "Target project Scripture Reference Settings is blank for this book (standard English name used).";
+            if (p.NeedsHeading)
+                return "Target text has no section heading here. Plugin will insert '\\s Insert Heading' before '\\r'.";
+            
+            return "Clean insertion: A section heading already exists above this verse in the target text.";
+        }
+
+        private void Grid_CellPainting(object? sender, DataGridViewCellPaintingEventArgs e)
+        {
+            if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
+            if (_grid.Columns[e.ColumnIndex].Name != "ColStatus") return;
+
+            e.PaintBackground(e.CellBounds, true);
+
+            if (e.Value is string statusText && !string.IsNullOrWhiteSpace(statusText))
+            {
+                var g = e.Graphics;
+                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+
+                Color bgColor;
+                Color textColor;
+                Color borderColor;
+
+                if (statusText.StartsWith("Duplicate"))
+                {
+                    bgColor = Color.FromArgb(241, 245, 249);
+                    textColor = Color.FromArgb(100, 116, 139);
+                    borderColor = Color.FromArgb(203, 213, 225);
+                }
+                else if (statusText.StartsWith("Replaces"))
+                {
+                    bgColor = Color.FromArgb(254, 243, 199);
+                    textColor = Color.FromArgb(180, 83, 9);
+                    borderColor = Color.FromArgb(252, 211, 77);
+                }
+                else if (statusText.StartsWith("English Fallback"))
+                {
+                    bgColor = Color.FromArgb(243, 232, 255);
+                    textColor = Color.FromArgb(126, 34, 206);
+                    borderColor = Color.FromArgb(216, 180, 254);
+                }
+                else if (statusText.StartsWith("New"))
+                {
+                    bgColor = Color.FromArgb(220, 252, 231);
+                    textColor = Color.FromArgb(21, 128, 61);
+                    borderColor = Color.FromArgb(134, 239, 172);
+                }
+                else // Warning / Error
+                {
+                    bgColor = Color.FromArgb(254, 226, 226);
+                    textColor = Color.FromArgb(185, 28, 28);
+                    borderColor = Color.FromArgb(252, 165, 165);
+                }
+
+                using var font = new Font("Segoe UI", 8.5f, FontStyle.Bold);
+                var size = TextRenderer.MeasureText(statusText, font);
+                int padH = 10;
+                int pillWidth = Math.Min(size.Width + padH * 2, e.CellBounds.Width - 10);
+                int pillHeight = Math.Min(22, e.CellBounds.Height - 8);
+                int pillX = e.CellBounds.X + (e.CellBounds.Width - pillWidth) / 2;
+                int pillY = e.CellBounds.Y + (e.CellBounds.Height - pillHeight) / 2;
+
+                var pillRect = new Rectangle(pillX, pillY, pillWidth, pillHeight);
+
+                using (var brush = new SolidBrush(bgColor))
+                using (var pen = new Pen(borderColor, 1))
+                using (var path = CreateRoundedRectanglePath(pillRect, 8))
+                {
+                    g.FillPath(brush, path);
+                    g.DrawPath(pen, path);
+                }
+
+                TextRenderer.DrawText(
+                    g,
+                    statusText,
+                    font,
+                    pillRect,
+                    textColor,
+                    TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.EndEllipsis);
+            }
+
+            e.Handled = true;
+        }
+
+        private static System.Drawing.Drawing2D.GraphicsPath CreateRoundedRectanglePath(Rectangle rect, int radius)
+        {
+            var path = new System.Drawing.Drawing2D.GraphicsPath();
+            int d = radius * 2;
+            if (rect.Width < d || rect.Height < d)
+            {
+                path.AddRectangle(rect);
+                return path;
+            }
+
+            path.AddArc(rect.X, rect.Y, d, d, 180, 90);
+            path.AddArc(rect.Right - d, rect.Y, d, d, 270, 90);
+            path.AddArc(rect.Right - d, rect.Bottom - d, d, d, 0, 90);
+            path.AddArc(rect.X, rect.Bottom - d, d, d, 90, 90);
+            path.CloseFigure();
+            return path;
         }
 
         private void Grid_CellValueChanged(object? sender, DataGridViewCellEventArgs e)
@@ -868,10 +982,14 @@ namespace ReferenceTransfer.Plugin.UI
         {
             int total = _currentProposals.Count;
             int accepted = _currentProposals.Count(p => p.IsAccepted && !p.IsDuplicate && !p.HasWarning);
+            int newClean = _currentProposals.Count(p => p.IsAccepted && !p.IsDuplicate && !p.HasWarning && !p.NeedsHeading && string.IsNullOrEmpty(p.ExistingReference));
+            int newHeading = _currentProposals.Count(p => p.IsAccepted && !p.IsDuplicate && !p.HasWarning && p.NeedsHeading && string.IsNullOrEmpty(p.ExistingReference));
+            int replaces = _currentProposals.Count(p => !p.IsDuplicate && !p.HasWarning && !string.IsNullOrEmpty(p.ExistingReference));
             int duplicates = _currentProposals.Count(p => p.IsDuplicate);
             int warnings = _currentProposals.Count(p => p.HasWarning);
 
-            _lblStatus.Text = $"Total References: {total} | Ready to Transfer: {accepted} | Duplicates: {duplicates} | Warnings: {warnings}";
+            string headingDetail = newHeading > 0 ? $" ({newClean} clean, {newHeading} with \\s)" : "";
+            _lblStatus.Text = $"Total References: {total} | Ready: {accepted}{headingDetail} | Replaces: {replaces} | Duplicates: {duplicates} | Warnings: {warnings}";
         }
 
         private void BtnApply_Click(object? sender, EventArgs e)

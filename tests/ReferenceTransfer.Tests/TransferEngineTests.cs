@@ -180,6 +180,39 @@ namespace ReferenceTransfer.Tests
             Assert.False(proposals[0].IsAccepted);
             Assert.Equal("Adam's Descendants", proposals[0].ExistingHeading);
             Assert.Equal("(1CH 1:1-4)", proposals[0].ExistingReference);
+            Assert.Equal("Duplicate (Skipped)", proposals[0].Status);
+        }
+
+        [Fact]
+        public void Status_ReturnsExpectedDisplayForVariousProposalStates()
+        {
+            // 1. New with clean heading
+            var p1 = new ReferenceTransferProposal { NeedsHeading = false };
+            Assert.Equal("New", p1.Status);
+
+            // 2. New with heading to be added
+            var p2 = new ReferenceTransferProposal { NeedsHeading = true };
+            Assert.Equal("New  ➕ \\s", p2.Status);
+
+            // 3. Replaces existing
+            var p3 = new ReferenceTransferProposal { ExistingReference = "(1 Chron 1:1)" };
+            Assert.Equal("Replaces Existing", p3.Status);
+
+            // 4. Duplicate
+            var p4 = new ReferenceTransferProposal { IsDuplicate = true };
+            Assert.Equal("Duplicate (Skipped)", p4.Status);
+
+            // 5. English fallback clean
+            var p5 = new ReferenceTransferProposal { IsEnglishFallback = true, NeedsHeading = false };
+            Assert.Equal("English Fallback", p5.Status);
+
+            // 6. English fallback with heading
+            var p6 = new ReferenceTransferProposal { IsEnglishFallback = true, NeedsHeading = true };
+            Assert.Equal("English Fallback  ➕ \\s", p6.Status);
+
+            // 7. Warning
+            var p7 = new ReferenceTransferProposal { Warning = "Verse 14 not found in Chapter 23." };
+            Assert.Equal("Verse 14 not found in Chapter 23.", p7.Status);
         }
     }
 }
