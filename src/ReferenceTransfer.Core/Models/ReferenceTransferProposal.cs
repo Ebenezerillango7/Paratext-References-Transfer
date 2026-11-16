@@ -45,6 +45,12 @@ namespace ReferenceTransfer.Core.Models
         public bool NeedsHeading { get; set; }
 
         /// <summary>
+        /// Whether a section heading (\s Insert Heading) will be inserted if missing.
+        /// Governed by the 'Insert \s Insert Heading if missing' option.
+        /// </summary>
+        public bool WillInsertHeading { get; set; } = true;
+
+        /// <summary>
         /// Whether this exact reference already exists in the target text
         /// </summary>
         public bool IsDuplicate { get; set; }
@@ -85,8 +91,9 @@ namespace ReferenceTransfer.Core.Models
                 {
                     return WillReplaceExisting ? "Replaces Existing" : "Existing Kept (Skipped)";
                 }
-                if (IsEnglishFallback) return NeedsHeading ? "English Fallback  ➕ \\s" : "English Fallback";
-                if (NeedsHeading) return "New  ➕ \\s";
+                bool addingHeading = NeedsHeading && WillInsertHeading;
+                if (IsEnglishFallback) return addingHeading ? "English Fallback  ➕ \\s" : "English Fallback";
+                if (addingHeading) return "New  ➕ \\s";
                 return "New";
             }
         }

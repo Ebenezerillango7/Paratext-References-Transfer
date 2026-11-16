@@ -64,7 +64,8 @@ namespace ReferenceTransfer.Core.Engine
                         _options.CleanTrailingPunctuation, 
                         _options.NameStyle, 
                         _options.ScriptureSettings,
-                        _sourceVernacularMgr)
+                        _sourceVernacularMgr),
+                    WillInsertHeading = _options.InsertHeadingIfMissing
                 };
 
                 // Check if target project had blank scripture settings for any book in this reference (English fallback used)

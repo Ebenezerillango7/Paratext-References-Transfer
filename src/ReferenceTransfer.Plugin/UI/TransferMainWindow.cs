@@ -185,6 +185,7 @@ namespace ReferenceTransfer.Plugin.UI
             _chkParentheses.CheckedChanged += (s, e) => UpdateProposedReferencesInGrid();
 
             _chkHeading = new CheckBox { Text = "Insert '\\s Insert Heading' if missing", Checked = true, Location = new Point(275, 88), AutoSize = true };
+            _chkHeading.CheckedChanged += ChkHeading_CheckedChanged;
 
             _chkCleanPunct = new CheckBox { Text = "Clean trailing punctuation", Checked = true, Location = new Point(540, 88), AutoSize = true };
             _chkCleanPunct.CheckedChanged += (s, e) => UpdateProposedReferencesInGrid();
@@ -866,11 +867,15 @@ namespace ReferenceTransfer.Plugin.UI
                     : $"Target already has reference '{p.ExistingReference}'. Skipped because 'Replace existing \\r references' is unchecked.";
             }
             if (p.IsEnglishFallback)
-                return p.NeedsHeading 
+                return (p.NeedsHeading && p.WillInsertHeading) 
                     ? "Target project Scripture Reference Settings is blank for this book (standard English name used). Also inserting '\\s Insert Heading'."
                     : "Target project Scripture Reference Settings is blank for this book (standard English name used).";
             if (p.NeedsHeading)
-                return "Target text has no section heading here. Plugin will insert '\\s Insert Heading' before '\\r'.";
+            {
+                return p.WillInsertHeading
+                    ? "Target text has no section heading here. Plugin will insert '\\s Insert Heading' before '\\r'."
+                    : "Target text has no section heading here. '\\s' will NOT be inserted because 'Insert \\s if missing' is unchecked.";
+            }
             
             return "Clean insertion: A section heading already exists above this verse in the target text.";
         }
@@ -981,6 +986,28 @@ namespace ReferenceTransfer.Plugin.UI
                     UpdateStatusCounts();
                 }
             }
+        }
+
+        private void ChkHeading_CheckedChanged(object? sender, EventArgs e)
+        {
+            bool headingEnabled = _chkHeading.Checked;
+
+            foreach (var p in _currentProposals)
+            {
+                p.WillInsertHeading = headingEnabled;
+            }
+
+            for (int i = 0; i < _grid.Rows.Count; i++)
+            {
+                if (_grid.Rows[i].Tag is ReferenceTransferProposal p)
+                {
+                    _grid.Rows[i].Cells["ColStatus"].Value = p.Status;
+                    _grid.Rows[i].Cells["ColStatus"].ToolTipText = GetStatusToolTip(p);
+                }
+            }
+
+            _grid.Refresh();
+            UpdateStatusCounts();
         }
 
         private void ChkRemoveExisting_CheckedChanged(object? sender, EventArgs e)
